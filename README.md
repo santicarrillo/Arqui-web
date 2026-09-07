@@ -1,6 +1,6 @@
 # Trabajo Practico Integrador
 
-Ejercicio Integrador (DAO y Patrones) — trabajo grupal.
+Ejercicio Integrador — trabajo grupal.
 Este es el **esqueleto base**: la infraestructura ya esta hecha (entities, factory,
 utils/HelperMySQL, Main cableado). Cada persona implementa **solo su metodo**,
 marcado con `// TODO INCISO n`.
