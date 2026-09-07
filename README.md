@@ -1,6 +1,5 @@
 # Trabajo Practico Integrador
 
-Ejercicio Integrador — trabajo grupal.
 Este es el **esqueleto base**: la infraestructura ya esta hecha (entities, factory,
 utils/HelperMySQL, Main cableado). Cada persona implementa **solo su metodo**,
 marcado con `// TODO INCISO n`.
@@ -92,7 +91,7 @@ Cada uno implementa SU metodo (no toca el de otro):
 
 ---
 
-## 6. Reglas de oro (evitan el 90% de los problemas)
+## 6. Reglas de oro
 
 1. **`git pull` antes de empezar y antes de cada `git push`.**
 2. **No editar el metodo de otra persona** — cada uno el suyo.
