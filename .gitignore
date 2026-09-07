@@ -1,0 +1,15 @@
+# Compilados y build
+target/
+build/
+out/
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
