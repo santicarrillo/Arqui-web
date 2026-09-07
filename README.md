@@ -80,7 +80,7 @@ Cada uno implementa SU metodo (no toca el de otro):
 
 1. Clonar el repo **una vez**: `git clone <url>`.
 2. Antes de arrancar SIEMPRE: `git checkout main` y `git pull`.
-3. Crear tu rama: `git checkout -b inciso-3`.
+3. Crear tu rama: `git checkout -b inciso-<tu-inciso>`.
 4. Implementar tu metodo. Commits chicos y seguidos:
    ```
    git add .
