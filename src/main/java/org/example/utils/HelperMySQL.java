@@ -1,8 +1,17 @@
 package org.example.utils;
 
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.example.entities.Cliente;
+import org.example.entities.Factura;
+import org.example.entities.FacturaProducto;
+import org.example.entities.Producto;
 
 public class HelperMySQL {
     private Connection conn = null;
@@ -61,9 +70,52 @@ public class HelperMySQL {
     }
 
     public void populateDB() throws Exception {
-        // INCISO 2: leer los 4 CSV de src/main/resources (clientes, productos, facturas,
-        // facturas-productos) con Apache Commons CSV e insertarlos con PreparedStatement,
-        // EN ORDEN DE FK (Cliente, Producto, Factura, Factura_Producto). Hacer conn.commit().
-        // Los CSV ya estan en la carpeta resources.
+        // Clientes
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO Cliente (idCliente, nombre, email) VALUES (?, ?, ?)");
+        for (CSVRecord row : CSVFormat.DEFAULT.withHeader().parse(new FileReader(RES + "clientes.csv"))) {
+            Cliente c = new Cliente(Integer.parseInt(row.get("idCliente")), row.get("nombre"), row.get("email"));
+            ps.setInt(1, c.getIdCliente());
+            ps.setString(2, c.getNombre());
+            ps.setString(3, c.getEmail());
+            ps.executeUpdate();
+        }
+        conn.commit();
+
+        // Productos
+        ps = conn.prepareStatement("INSERT INTO Producto (idProducto, nombre, valor) VALUES (?, ?, ?)");
+        for (CSVRecord row : CSVFormat.DEFAULT.withHeader().parse(new FileReader(RES + "productos.csv"))) {
+            Producto p = new Producto(Integer.parseInt(row.get("idProducto")), row.get("nombre"), Double.parseDouble(row.get("valor")));
+            ps.setInt(1, p.getIdProducto());
+            ps.setString(2, p.getNombre());
+            ps.setDouble(3, p.getValor());
+            ps.executeUpdate();
+        }
+        conn.commit();
+
+        // Facturas
+        ps = conn.prepareStatement("INSERT INTO Factura (idFactura, idCliente) VALUES (?, ?)");
+        for (CSVRecord row : CSVFormat.DEFAULT.withHeader().parse(new FileReader(RES + "facturas.csv"))) {
+            Factura f = new Factura(Integer.parseInt(row.get("idFactura")), Integer.parseInt(row.get("idCliente")));
+            ps.setInt(1, f.getIdFactura());
+            ps.setInt(2, f.getIdCliente());
+            ps.executeUpdate();
+        }
+        conn.commit();
+
+        // Factura_Producto
+        ps = conn.prepareStatement("INSERT INTO Factura_Producto (idFactura, idProducto, cantidad) VALUES (?, ?, ?)");
+        for (CSVRecord row : CSVFormat.DEFAULT.withHeader().parse(new FileReader(RES + "facturas-productos.csv"))) {
+            FacturaProducto fp = new FacturaProducto(
+                    Integer.parseInt(row.get("idFactura")),
+                    Integer.parseInt(row.get("idProducto")),
+                    Integer.parseInt(row.get("cantidad")));
+            ps.setInt(1, fp.getIdFactura());
+            ps.setInt(2, fp.getIdProducto());
+            ps.setInt(3, fp.getCantidad());
+            ps.executeUpdate();
+        }
+        conn.commit();
+
+        System.out.println("Base cargada.");
     }
 }
