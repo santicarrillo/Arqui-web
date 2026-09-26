@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
-             version="2.1">
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+             version="3.1">
 
     <persistence-unit name="my_persistence_unit" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- Clases del Ejercicio 1: Turno, Dirección, Persona, Socio -->
+        <!-- Clases del Ejercicio 1: Estudiante,Inscripcion,Carrera -->
         <!-- CORRECCIÓN: Cambiar de com.tudai a com.entrega2 -->
-        <class>com.entrega2.Persona</class>
-        <class>com.entrega2.Direccion</class>
-        <class>com.entrega2.Turno</class>
-        <class>com.entrega2.Socio</class>
+        <class>com.entrega2.entitys.Estudiante</class>
+        <class>com.entrega2.entitys.Inscripcion</class>
+        <class>com.entrega2.entitys.Carrera</class>
 
         <properties>
             <!-- Configuración de MySQL (Docker) -->
             <property name="jakarta.persistence.jdbc.driver"
                       value="com.mysql.cj.jdbc.Driver" />
             <property name="jakarta.persistence.jdbc.url"
-                      value="jdbc:mysql://localhost:3306/tp2_arquitectura?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true" />
+                      value="jdbc:mysql://localhost:3306/integrador?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true" />
             <property name="jakarta.persistence.jdbc.user" value="root" />
             <property name="jakarta.persistence.jdbc.password" value="root" />
 
