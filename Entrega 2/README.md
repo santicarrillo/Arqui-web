@@ -6,7 +6,7 @@ Este proyecto corresponde al Trabajo Práctico N° 2, donde se implementa el dis
 
 ### Inciso 1: Diseño del Dominio
 - [x] **Diagrama Entidad-Relación (DER):** Modelado conceptual y lógico completado.
-    ![Diagrama Entidad-Relación](/Arqui-web/Entrega%202/der.png)
+    ![Diagrama Entidad-Relación](der.png)
 - [x] **Clases (Diagrama de Objetos):** Clases básicas creadas en el paquete `entitys` respetando fielmente la estructura de los archivos `.csv` provistos (`estudiantes.csv`, `carreras.csv`, `estudianteCarrera.csv`).
 
 ## Notas y Decisiones de Diseño
