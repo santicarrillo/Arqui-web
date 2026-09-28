@@ -26,7 +26,7 @@
             <!-- create: borra y recrea las tablas cada vez -->
             <!-- update: solo actualiza las tablas (mantiene datos) -->
             <property name="hibernate.hbm2ddl.auto" value="create" />
-            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.show_sql" value="true" /> <!-- ponganlo en false para la prueba de consultas -->
             <property name="hibernate.format_sql" value="true" />
 
             <!-- Dialecto para MySQL 8+ -->

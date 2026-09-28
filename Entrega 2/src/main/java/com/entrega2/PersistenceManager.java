@@ -1,11 +1,13 @@
 package com.entrega2;
-
+// import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;//
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
 public class PersistenceManager {
-
+  //((Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
     private static EntityManagerFactory emf;
     private static ThreadLocal<EntityManager> threadLocal = new ThreadLocal<>();
 
