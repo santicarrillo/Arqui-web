@@ -5,14 +5,14 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
 public class PersistenceManager {
-    
+
     private static EntityManagerFactory emf;
     private static ThreadLocal<EntityManager> threadLocal = new ThreadLocal<>();
-    
+
     static {
         emf = Persistence.createEntityManagerFactory("my_persistence_unit");
     }
-    
+
     /**
      * Obtiene el EntityManager para la thread actual.
      * Si no existe, crea uno nuevo.
@@ -25,7 +25,14 @@ public class PersistenceManager {
         }
         return em;
     }
-    
+
+    /**
+     * Devuelve el EntityManagerFactory único de la aplicación.
+     */
+    public static EntityManagerFactory getEntityManagerFactory() {
+        return emf;
+    }
+
     /**
      * Cierra el EntityManager de la thread actual.
      */
@@ -36,7 +43,7 @@ public class PersistenceManager {
             threadLocal.remove();
         }
     }
-    
+
     /**
      * Cierra el EntityManagerFactory (llamar una sola vez al finalizar la app).
      */

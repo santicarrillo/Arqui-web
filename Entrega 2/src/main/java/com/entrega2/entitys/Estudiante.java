@@ -121,4 +121,8 @@ public class Estudiante {
                 ", ciudadResidencia='" + ciudadResidencia + '\'' +
                 '}';
     }
+
+    public String getNombre() {
+        return this.nombre;
+    }
 }
