@@ -34,11 +34,22 @@ public class Main {
             EstudianteDao estudianteDao = new EstudianteJPQL(emf);
             EstudianteService estudianteService = new EstudianteService(estudianteDao);
 
-            //Aca irian  consignas 2(c 2(d
-            // for ... estudiantesService.getEstudiantes....
+            //2c)
+            System.out.println("estudiantes ordenados ejercicio 2c");
+            for (Estudiante e : estudianteService.getEstudiantesOrdenados()) {
+                System.out.println(e);
+            }
+            //d)
+            System.out.println("\n--- 2.d) Estudiante con LU 34978 ---");
+            Estudiante estudiante = estudianteService.getEstudianteByLU(34978);
+            if (estudiante != null) {
+                System.out.println(estudiante);
+            } else {
+                System.out.println("No se encontró un estudiante con esa LU");
+            }
 
             //e) recuperar todos los estudiantes, en base a su género
-            for (Estudiante e : estudianteRepo.getEstudiantesByGenero("Male")) {
+                for (Estudiante e : estudianteRepo.getEstudiantesByGenero("Male")) {
                 System.out.println(e);
             }
 
