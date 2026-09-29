@@ -1,6 +1,12 @@
 package com.entrega2;
-Ñ
+
+import com.entrega2.dao.CarreraDao;
+import com.entrega2.dao.EstudianteDao;
+import com.entrega2.dao.impljpql.CarreraJPQL;
+import com.entrega2.entitys.Carrera;
 import com.entrega2.entitys.Estudiante;
+import com.entrega2.services.CarreraService;
+import com.entrega2.services.EstudianteService;
 import com.entrega2.utils.HelperMySQL;
 import com.entrega2.dao.impljpql.EstudianteJPQL;
 import jakarta.persistence.EntityManagerFactory;
@@ -11,6 +17,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+
+
         try {
             System.out.println("=== Iniciando TP2 - JPA ===\n");
 
@@ -22,32 +30,27 @@ public class Main {
             EntityManagerFactory emf = PersistenceManager.getEntityManagerFactory();
             EstudianteJPQL estudianteRepo = new com.entrega2.dao.impljpql.EstudianteJPQL(emf);
 
-            // --- 2.c) Recuperar todos los estudiantes ordenados ---
-            System.out.println("\n--- Ejercicio 2.c: Estudiantes ordenados ---");
-            List<Estudiante> estudiantesOrdenados = estudianteRepo.getEstudiantesOrdenados();
+            //Utilizando el SERVICE
+            EstudianteDao estudianteDao = new EstudianteJPQL(emf);
+            EstudianteService estudianteService = new EstudianteService(estudianteDao);
 
-            if (estudiantesOrdenados.isEmpty()) {
-                System.out.println("No se encontraron estudiantes.");
-            } else {
-                for (Estudiante e : estudiantesOrdenados) {
-                    System.out.println("LU: " + e.getLibretaUniversitaria() +
-                            " | Apellido: " + e.getApellido() +
-                            " | Nombre: " + e.getNombre());
-                }
+            //Aca irian  consignas 2(c 2(d
+            // for ... estudiantesService.getEstudiantes....
+
+            //e) recuperar todos los estudiantes, en base a su género
+            for (Estudiante e : estudianteRepo.getEstudiantesByGenero("Male")) {
+                System.out.println(e);
             }
 
-            // --- 2.d) Recuperar un estudiante por su Libreta Universitaria (LU) ---
-            System.out.println("\n--- Ejercicio 2.d: Buscar estudiante por LU ---");
-            int luBuscada = 90958;
-            Estudiante estudiante = estudianteRepo.getEstudianteByLU(luBuscada);
+            //f) recuperar las carreras con estudiantes inscriptos, y ordenar por cantidad de inscriptos
+            CarreraDao carreraDao = new CarreraJPQL(emf);
+            CarreraService carreraService = new CarreraService(carreraDao);
 
-            if (estudiante != null) {
-                System.out.println("¡Estudiante encontrado: " + estudiante.getNombre() + " " + estudiante.getApellido() + "!");
-            } else {
-                System.out.println("No existe ningún estudiante con la LU: " + luBuscada);
+            for(Carrera c : carreraService.getCarrerasOrdenadasPorInscriptos()){
+                System.out.println(c);
             }
 
-            System.out.println("\n=== Fin del programa ===");
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,6 +58,8 @@ public class Main {
             PersistenceManager.closeEntityManager();
             PersistenceManager.closeEntityManagerFactory();
         }
+
+
     }
 }
 

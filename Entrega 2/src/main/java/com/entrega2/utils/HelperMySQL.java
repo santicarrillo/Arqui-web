@@ -14,7 +14,7 @@ public class HelperMySQL {
 
     private EntityManager em;
     // Ruta base donde están los CSV (ajustar si es necesario)
-    private static final String CSV_PATH = "src/resources/";
+    private static final String CSV_PATH = "src/main/resources/";
 
     public HelperMySQL() {
         this.em = PersistenceManager.getEntityManager();
@@ -23,7 +23,7 @@ public class HelperMySQL {
     private void popularEstudiantes() throws Exception {
         em.getTransaction().begin();
         try (FileReader reader = new FileReader(CSV_PATH + "estudiantes.csv");
-                CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
+             CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
 
             for (CSVRecord row : csvParser) {
                 Estudiante estudiante = new Estudiante(
@@ -49,7 +49,7 @@ public class HelperMySQL {
     private void popularCarreras() throws Exception {
         em.getTransaction().begin();
         try (FileReader reader = new FileReader(CSV_PATH + "carreras.csv");
-                CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
+             CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
 
             for (CSVRecord row : csvParser) {
                 Carrera carrera = new Carrera(
@@ -71,7 +71,7 @@ public class HelperMySQL {
     private void popularInscripciones() throws Exception {
         em.getTransaction().begin();
         try (FileReader reader = new FileReader(CSV_PATH + "estudianteCarrera.csv");
-                CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
+             CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)) {
 
             for (CSVRecord row : csvParser) {
                 // Buscamos las entidades fuertes primero usando sus IDs

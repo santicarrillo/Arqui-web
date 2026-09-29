@@ -41,4 +41,24 @@ public class EstudianteJPQL implements EstudianteDao {
             throw e;
         }
     }
+
+    @Override
+    public List<Estudiante> getEstudiantesByGenero(String genero) {
+
+        try (EntityManager em = emf.createEntityManager()) {
+            String jpql = "SELECT e FROM Estudiante e WHERE e.genero = :genero";
+
+            TypedQuery<Estudiante> query = em.createQuery(
+                    jpql,
+                    Estudiante.class
+            );
+
+            query.setParameter("genero", genero);
+
+            return query.getResultList();
+        } catch (PersistenceException e) {
+            System.err.println("Error al recuperar estudiantes por género: " + e.getMessage());
+            return List.of();
+        }
+    }
 }
