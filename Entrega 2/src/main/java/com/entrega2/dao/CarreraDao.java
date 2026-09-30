@@ -6,7 +6,12 @@ import java.util.List;
 
 public interface CarreraDao {
 
-    //2.f) recuperar las carreras con estudiantes inscriptos, y ordenar por cantidad de inscriptos.
-    // ordenadas por cantidad de inscriptos
+    // 2.f) Recuperar las carreras con estudiantes inscriptos, ordenadas por cantidad de inscriptos
     List<Carrera> getCarrerasOrdenadasPorInscriptos();
+
+    // Inciso 3) Inscriptos por carrera y año -> [nombreCarrera, anio, cantidad]
+    List<Object[]> getInscriptosPorCarreraYAnio();
+
+    // Inciso 3) Egresados por carrera y año -> [nombreCarrera, anio, cantidad]
+    List<Object[]> getEgresadosPorCarreraYAnio();
 }
