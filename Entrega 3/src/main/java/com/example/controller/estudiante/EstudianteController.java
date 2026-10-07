@@ -18,6 +18,7 @@ public class EstudianteController {
     public EstudianteController(EstudianteService estudianteService) {
         this.estudianteService = estudianteService;
     }
+    @PostMapping("")
     public ResponseEntity<EstudianteResponseDTO> save(@RequestBody @Valid EstudianteRequestDTO request) {
         final var result = this.estudianteService.save(request);
 

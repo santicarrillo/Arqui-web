@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Atrapa las excepciones de todos los controllers y las devuelve como un ErrorDTO,
  * con el código HTTP que corresponde (@ResponseStatus). Así cada endpoint no tiene que hacer try/catch.
  */
-@RestControllerAdvice(basePackages = "com.entrega3.controller")
+@RestControllerAdvice(basePackages = "com.example.controller")
 public class GlobalExceptionHandler {
 
     // 404: no se encontró lo que se buscaba
