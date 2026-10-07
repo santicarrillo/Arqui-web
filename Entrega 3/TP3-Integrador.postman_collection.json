@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "TP3 - Integrador (Spring Boot)",
+    "description": "Pruebas de los servicios REST del integrador.\nCorrer en orden con la app levantada en localhost:8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "2.a) Alta de un estudiante (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroDocumento\": 40000000,\n  \"libretaUniversitaria\": 999999,\n  \"nombre\": \"Nacho\",\n  \"apellido\": \"Torres\",\n  \"edad\": 25,\n  \"genero\": \"Male\",\n  \"ciudadResidencia\": \"Tandil\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes"
+          ]
+        },
+        "description": "Da de alta un estudiante nuevo. Espera 201 Created y el header Location."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('Devuelve el estudiante creado', () => {",
+              "  const e = pm.response.json();",
+              "  pm.expect(e.numeroDocumento).to.eql(40000000);",
+              "  pm.expect(e.libretaUniversitaria).to.eql(999999);",
+              "  pm.expect(e.apellido).to.eql('Torres');",
+              "});",
+              "pm.test('Incluye el header Location', () => pm.response.to.have.header('Location'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2.a) DNI repetido (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroDocumento\": 40000000,\n  \"libretaUniversitaria\": 888888,\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Estudiante\",\n  \"edad\": 30,\n  \"genero\": \"Female\",\n  \"ciudadResidencia\": \"Rauch\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes"
+          ]
+        },
+        "description": "Correr después del alta: el DNI 40000000 ya existe. Espera 409 Conflict."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 409 Conflict', () => pm.response.to.have.status(409));",
+              "pm.test('Devuelve un ErrorDTO', () => pm.expect(pm.response.json()).to.have.property('message'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2.a) LU repetida (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroDocumento\": 41111111,\n  \"libretaUniversitaria\": 34978,\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"edad\": 22,\n  \"genero\": \"Female\",\n  \"ciudadResidencia\": \"Tandil\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes"
+          ]
+        },
+        "description": "La LU 34978 ya está en el CSV (Isidro Blackmuir). Espera 409 Conflict."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 409 Conflict', () => pm.response.to.have.status(409));",
+              "pm.test('Devuelve un ErrorDTO', () => pm.expect(pm.response.json()).to.have.property('message'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2.a) Datos inválidos (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroDocumento\": 42222222,\n  \"libretaUniversitaria\": 777777,\n  \"nombre\": \"Juan\",\n  \"edad\": -5,\n  \"genero\": \"Male\",\n  \"ciudadResidencia\": \"Tandil\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes"
+          ]
+        },
+        "description": "Falta el apellido y la edad es negativa. Espera 400 Bad Request con el detalle de cada error."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('Informa qué campos están mal', () => pm.expect(pm.response.json().message).to.include('apellido'));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
