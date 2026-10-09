@@ -1,11 +1,12 @@
 package com.example.repository;
 
 
-import com.example.entity.*;
-
 import com.example.entity.Estudiante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -17,5 +18,9 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Integer>
     boolean existsByLibretaUniversitaria(int libretaUniversitaria);
 
     // ---- Acá van las consultas de los incisos 2.c, 2.d, 2.e y 2.g ----
+    //2.d
+    Optional<Estudiante> findByLibretaUniversitaria(int libretaUniversitaria);
+    //2.e
+    List<Estudiante> findByGenero(String genero);
 }
 

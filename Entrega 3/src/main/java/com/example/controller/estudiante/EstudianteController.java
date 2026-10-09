@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/estudiantes")
@@ -29,5 +30,16 @@ public class EstudianteController {
                 .toUri();
 
         return ResponseEntity.created(ubicacion).body(result);
+    }
+
+    //2d
+    @GetMapping("/libreta/{libretaUniversitaria}")
+    public ResponseEntity<EstudianteResponseDTO> findByLibretaUniversitaria(@PathVariable int libretaUniversitaria){
+        return ResponseEntity.ok(this.estudianteService.findByLibretaUniversitaria(libretaUniversitaria));
+    }
+    //2e
+    @GetMapping("/genero/{genero}")
+    public ResponseEntity<List<EstudianteResponseDTO>> findByGenero(@PathVariable String genero){
+        return ResponseEntity.ok(this.estudianteService.findByGenero(genero));
     }
 }
