@@ -30,4 +30,10 @@ public class EstudianteController {
 
         return ResponseEntity.created(ubicacion).body(result);
     }
+
+    //2d
+    @GetMapping("/libreta/{libretaUniversitaria}")
+    public ResponseEntity<EstudianteResponseDTO> findByLibretaUniversitaria(@PathVariable int libretaUniversitaria){
+        return ResponseEntity.ok(this.estudianteService.findByLibretaUniversitaria(libretaUniversitaria));
+    }
 }

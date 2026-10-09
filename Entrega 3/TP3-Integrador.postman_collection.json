@@ -186,6 +186,75 @@
           }
         }
       ]
+    },
+    {
+      "name": "2.d) Buscar estudiante por LU existente (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes/libreta/34978",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes",
+            "libreta",
+            "34978"
+          ]
+        },
+        "description": "Recupera el estudiante con libreta universitaria 34978 (Isidro Blackmuir precargado desde el CSV). Espera 200 OK."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve el estudiante correcto', () => {",
+              "  const e = pm.response.json();",
+              "  pm.expect(e.libretaUniversitaria).to.eql(34978);",
+              "  pm.expect(e.nombre).to.eql('Isidro');",
+              "  pm.expect(e.apellido).to.eql('Blackmuir');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2.d) Buscar estudiante por LU inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes/libreta/9999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes",
+            "libreta",
+            "9999999"
+          ]
+        },
+        "description": "Busca una libreta universitaria que no existe. Espera 404 Not Found y un ErrorDTO."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 404 Not Found', () => pm.response.to.have.status(404));",
+              "pm.test('Devuelve un ErrorDTO', () => pm.expect(pm.response.json()).to.have.property('message'));"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
