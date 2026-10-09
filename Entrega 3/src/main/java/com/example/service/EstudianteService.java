@@ -8,7 +8,7 @@ import com.example.service.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
         * Lógica de negocio de los estudiantes.
@@ -58,5 +58,10 @@ public class EstudianteService {
         return estudianteRepository.findByLibretaUniversitaria(libretaUniversitaria)
                 .map(estudiante -> new EstudianteResponseDTO(estudiante))
                 .orElseThrow(() -> new NotFoundException("Estudiante", libretaUniversitaria));
+    }
+    //2.e
+    public List<EstudianteResponseDTO> findByGenero(String genero){
+        return this.estudianteRepository.findByGenero(genero).stream()
+                .map(estudiante -> new EstudianteResponseDTO(estudiante)).toList();
     }
 }

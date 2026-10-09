@@ -255,6 +255,82 @@
           }
         }
       ]
+    },
+    {
+      "name": "2.e) Recuperar estudiantes por género (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes/genero/Male",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes",
+            "genero",
+            "Male"
+          ]
+        },
+        "description": "Recupera todos los estudiantes con género 'Male'. Espera 200 OK y que todos los elementos coincidan con el género."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve una lista no vacía', () => {",
+              "  const list = pm.response.json();",
+              "  pm.expect(Array.isArray(list)).to.be.true;",
+              "  pm.expect(list.length).to.be.above(0);",
+              "});",
+              "pm.test('Todos los estudiantes son del género solicitado', () => {",
+              "  const list = pm.response.json();",
+              "  list.forEach(e => pm.expect(e.genero).to.eql('Male'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2.e) Género sin estudiantes (200 con lista vacía)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/estudiantes/genero/Inexistente",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "estudiantes",
+            "genero",
+            "Inexistente"
+          ]
+        },
+        "description": "Busca un género que no tiene estudiantes. Espera 200 OK con un array vacío []."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve una lista vacía', () => {",
+              "  const list = pm.response.json();",
+              "  pm.expect(Array.isArray(list)).to.be.true;",
+              "  pm.expect(list.length).to.eql(0);",
+              "});"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
