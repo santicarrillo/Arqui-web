@@ -331,6 +331,54 @@
           }
         }
       ]
+    },
+    {
+      "name": "2.h) Reporte inscriptos y egresados por anio (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/carreras/reporte",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "carreras",
+            "reporte"
+          ]
+        },
+        "description": "Reporte por carrera con inscriptos y egresados por anio (carreras alfabeticas, anios cronologicos). Espera 200 OK."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Cada item tiene carrera y detallePorAnio', () => {",
+              "  pm.response.json().forEach(c => {",
+              "    pm.expect(c).to.have.property('carrera');",
+              "    pm.expect(c).to.have.property('detallePorAnio').that.is.an('array');",
+              "  });",
+              "});",
+              "pm.test('Carreras en orden alfabetico (sin distinguir mayusculas)', () => {",
+              "  const nombres = pm.response.json().map(c => c.carrera);",
+              "  const ord = [...nombres].sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));",
+              "  pm.expect(nombres).to.eql(ord);",
+              "});",
+              "pm.test('Anios en orden cronologico dentro de cada carrera', () => {",
+              "  pm.response.json().forEach(c => {",
+              "    const anios = c.detallePorAnio.map(d => d.anio);",
+              "    const ord = [...anios].sort((a,b) => a - b);",
+              "    pm.expect(anios).to.eql(ord);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
