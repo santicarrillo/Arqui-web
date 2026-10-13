@@ -64,4 +64,13 @@ public class EstudianteService {
         return this.estudianteRepository.findByGenero(genero).stream()
                 .map(estudiante -> new EstudianteResponseDTO(estudiante)).toList();
     }
+
+    // 2.g
+    public List<EstudianteResponseDTO> findByCarreraAndCiudad(
+            int idCarrera, String ciudad) {
+
+        return this.estudianteRepository.findByCarreraAndCiudad(idCarrera, ciudad).stream()
+                .map(estudiante -> new EstudianteResponseDTO(estudiante)).toList();
+    }
+
 }
