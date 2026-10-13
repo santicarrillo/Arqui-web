@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.example.service.dto.Inscripcion.Request.InscripcionRequestDTO;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.util.List;
@@ -30,6 +32,23 @@ public class EstudianteController {
                 .toUri();
 
         return ResponseEntity.created(ubicacion).body(result);
+    }
+
+    // 2.b) matricular un estudiante en una carrera
+    // POST /api/estudiantes/matricular
+    @PostMapping("/matricular")
+    public ResponseEntity<Void> matricularEstudiante(@RequestBody @Valid InscripcionRequestDTO request) {
+        this.estudianteService.matricularEstudiante(request.numeroDocumento(), request.idCarrera());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    // 2.c) recuperar todos los estudiantes con ordenamiento opcional
+    // GET /api/estudiantes?criterio=apellido&orden=asc
+    @GetMapping("")
+    public ResponseEntity<List<EstudianteResponseDTO>> findAllOrdenados(
+            @RequestParam(defaultValue = "apellido") String criterio,
+            @RequestParam(defaultValue = "asc") String orden) {
+        return ResponseEntity.ok(this.estudianteService.findAllOrdenados(criterio, orden));
     }
 
     //2d

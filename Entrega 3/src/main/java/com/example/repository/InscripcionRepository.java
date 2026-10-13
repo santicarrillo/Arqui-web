@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InscripcionRepository extends JpaRepository<Inscripcion, Integer> {
 
-    // ---- Acá van las consultas del inciso 2.b (matricular) si hacen falta ----
+    // 2.b) Verifica si un estudiante ya está inscripto en una carrera dada
+    boolean existsByEstudianteNumeroDocumentoAndCarreraIdCarrera(int dni, int idCarrera);
 }
