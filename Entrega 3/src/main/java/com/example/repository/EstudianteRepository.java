@@ -3,6 +3,7 @@ package com.example.repository;
 
 import com.example.entity.Estudiante;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,5 +23,15 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Integer>
     Optional<Estudiante> findByLibretaUniversitaria(int libretaUniversitaria);
     //2.e
     List<Estudiante> findByGenero(String genero);
+
+    //2.g
+    @Query("""
+    SELECT i.estudiante
+    FROM Inscripcion i
+    WHERE i.carrera.idCarrera = :idCarrera
+      AND i.estudiante.ciudadResidencia = :ciudad
+    """)
+    List<Estudiante> findByCarreraAndCiudad(int idCarrera, String ciudad);
+
 }
 
