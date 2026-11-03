@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import service.CompraService;
 
 @RestController
 @RequestMapping('/compras')
@@ -18,10 +19,10 @@ public class CompraController {
     @Operation(summary = "Reserva los lugares y crea la compra PENDIENTE (vence a los 10 minutos). "
             + "Repetir la misma Idempotency-Key devuelve la misma compra (200).")
     @PostMapping
-    public ResponseEntity<CompraView> crear(@RequestHeader("X-Usuario-Id") long usuarioId,
-                                            @RequestHeader("Idempotency-Key") String clave,
-                                            @Valid @RequestBody CompraRequest pedido) {
-        CompraCreada creada = compras.crear(usuarioId, clave, pedido);
+    public ResponseEntity<Dtos.CompraView> crear(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                                 @RequestHeader("Idempotency-Key") String clave,
+                                                 @Valid @RequestBody Dtos.CompraRequest pedido) {
+        CompraService.CompraCreada creada = compras.crear(usuarioId, clave, pedido);
         return ResponseEntity.status(creada.nueva() ? HttpStatus.CREATED : HttpStatus.OK).body(creada.compra());
     }
 
@@ -30,8 +31,8 @@ public class CompraController {
     @PostMapping("/{id}/pagar")
     public ResponseEntity<Object> pagar(@RequestHeader("X-Usuario-Id") long usuarioId,
                                         @PathVariable long id,
-                                        @Valid @RequestBody PagoRequest pedido) {
-        ResultadoPago resultado = compras.pagar(usuarioId, id, pedido.medioPago());
+                                        @Valid @RequestBody Dtos.PagoRequest pedido) {
+        CompraService.ResultadoPago resultado = compras.pagar(usuarioId, id, pedido.medioPago());
         return switch (resultado.resultado()) {
             case PAGADA -> ResponseEntity.ok().<Object>body(resultado.compra());
             case RECHAZADA -> ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).<Object>body(Map.of(
@@ -45,7 +46,7 @@ public class CompraController {
 
     @Operation(summary = "Consulta una compra del usuario")
     @GetMapping("/{id}")
-    public CompraView obtener(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable long id) {
+    public Dtos.CompraView obtener(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable long id) {
         return compras.obtener(usuarioId, id);
     }
 

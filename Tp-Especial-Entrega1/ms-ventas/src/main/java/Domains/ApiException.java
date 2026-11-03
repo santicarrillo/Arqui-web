@@ -3,7 +3,7 @@ package Domains;
 import org.springframework.http.HttpStatus;
 
 /** Error de negocio que se traduce a una respuesta HTTP con {error, mensaje}. */
-public class ApiException extends Throwable {
+public class ApiException extends RuntimeException {
     private final HttpStatus status;
     private final String error;
 
