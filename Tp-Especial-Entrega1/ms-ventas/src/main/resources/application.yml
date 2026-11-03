@@ -1,0 +1,30 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ventas-service
+  datasource:
+    url: ${VENTAS_DB_URL:jdbc:postgresql://localhost:5433/ventas}
+    username: ${VENTAS_DB_USER:ventas}
+    password: ${VENTAS_DB_PASSWORD:ventas}
+    hikari:
+      maximum-pool-size: 20
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+# Servicios a los que llama ventas (por el contrato openapi.yaml)
+servicios:
+  eventos:
+    url: ${EVENTOS_URL:http://localhost:8082}
+  lugares:
+    url: ${LUGARES_URL:http://localhost:8084}
+  pagos:
+    url: ${PAGOS_URL:http://localhost:8085}
+
+ventas:
+  reserva-minutos: 10
+  limite-por-cliente: 6
+  vencimiento-cada-ms: 30000
