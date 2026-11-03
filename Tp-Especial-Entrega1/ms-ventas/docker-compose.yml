@@ -1,0 +1,17 @@
+# Base de datos de ventas-service para desarrollo local.
+# Despues del compose de pagos/integracion (persona D) esto se unifica en un unico docker-compose del repo.
+services:
+  ventas_db:
+    image: postgres:16-alpine
+    container_name: ventas_db
+    environment:
+      POSTGRES_DB: ventas
+      POSTGRES_USER: ventas
+      POSTGRES_PASSWORD: ventas
+    ports:
+      - "5433:5432"
+    volumes:
+      - ventas_data:/var/lib/postgresql/data
+
+volumes:
+  ventas_data:
