@@ -1,5 +1,6 @@
 package integration;
 
+import ventas.VentasApplication;
 import ventas.api.Dtos;
 import ventas.client.ClientDtos;
 import ventas.client.EventosClient;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
  * servicios externos simulados. El contenedor es unico para todas las clases, asi el contexto de Spring
  * se puede reutilizar.
  */
-@SpringBootTest(properties = "ventas.vencimiento-cada-ms=3600000")
+@SpringBootTest(classes = VentasApplication.class, properties = "ventas.vencimiento-cada-ms=3600000")
 abstract class IntegracionBase {
 
     static final long EVENTO = 7L;
