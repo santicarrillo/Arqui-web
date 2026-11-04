@@ -23,4 +23,5 @@ public final class ClientDtos {
 
     public record CobroRequest(Long compraId, Long clienteId, BigDecimal monto) {
     }
+    public record ReintegroRequest(long detalleCompraId, BigDecimal monto){}
 }

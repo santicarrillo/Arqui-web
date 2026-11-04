@@ -108,5 +108,14 @@ public final class RestClients {
                 throw caido("pagos-service", e);
             }
         }
+
+        @Override
+        public void reintegrar(long pagoId, ClientDtos.ReintegroRequest reintegro) {
+            try {
+                http.post().uri("/pagos/{id}/reintegro", pagoId).body(reintegro).retrieve().toBodilessEntity();
+            } catch (RestClientException e) {
+                throw caido("pagos-service", e);
+            }
+        }
     }
 }
