@@ -10,7 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>ms-ventas</module>
+        <module>ms-eventos</module>
     </modules>
-
-
 </project>

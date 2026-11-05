@@ -1,0 +1,21 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: eventos-service
+  datasource:
+    url: ${EVENTOS_DB_URL:jdbc:postgresql://localhost:5434/eventos}
+    username: ${EVENTOS_DB_USER:eventos}
+    password: ${EVENTOS_DB_PASSWORD:eventos}
+    hikari:
+      maximum-pool-size: 10
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+# lugares nos dice si un sector es numerado; lo copiamos al cargar precios
+servicios:
+  lugares:
+    url: ${LUGARES_URL:http://localhost:8084}
