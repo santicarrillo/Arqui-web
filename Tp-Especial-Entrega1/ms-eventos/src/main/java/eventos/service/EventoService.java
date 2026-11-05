@@ -7,6 +7,7 @@ import eventos.repository.EventoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -63,6 +64,15 @@ public class EventoService {
         if ("CANCELADO".equals(e.estado()))
             throw ApiException.conflict("ESTADO_INVALIDO", "El evento ya está cancelado");
         repo.cancelar(eventoId, motivo);
+    }
+
+    // busqueda por criterios -> lista resumida
+    public List<Dtos.EventoResumenView> buscar(String tipo, Long organizadorId, String participante,
+                                               String ciudad, LocalDate desde, LocalDate hasta, String orden) {
+        return repo.buscar(tipo, organizadorId, participante, ciudad, desde, hasta, orden).stream()
+                .map(e -> new Dtos.EventoResumenView(
+                        e.id(), e.nombre(), e.tipo(), e.fechaHora(), e.ciudad(), e.estado()))
+                .toList();
     }
 
     // >>> Lo que consume ventas: arma el EventoInfoView para GET /eventos/{id} <<<

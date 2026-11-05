@@ -26,4 +26,8 @@ public final class Dtos {
             Integer limitePorCliente, List<SectorEventoView> sectores) {}
 
     public record SectorEventoView(Long sectorId, boolean numerado, BigDecimal precio) {}
+
+    // listado que devuelve la busqueda
+    public record EventoResumenView(
+            Long id, String nombre, String tipo, LocalDateTime fechaHora, String ciudad, String estado) {}
 }

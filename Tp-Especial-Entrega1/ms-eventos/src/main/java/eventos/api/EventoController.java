@@ -1,10 +1,12 @@
 package eventos.api;
 
 import eventos.service.EventoService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +50,19 @@ public class EventoController {
     public ResponseEntity<Void> cancelar(@PathVariable long id, @RequestBody Dtos.CancelacionRequest req) {
         service.cancelar(id, req.motivo());
         return ResponseEntity.ok().build();
+    }
+
+    // busqueda por multiples criterios (todos opcionales)
+    @GetMapping
+    public List<Dtos.EventoResumenView> buscar(
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) Long organizadorId,
+            @RequestParam(required = false) String participante,
+            @RequestParam(required = false) String ciudad,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false, defaultValue = "fecha") String orden) {
+        return service.buscar(tipo, organizadorId, participante, ciudad, desde, hasta, orden);
     }
 
     // >>> lo que llama ventas <<<

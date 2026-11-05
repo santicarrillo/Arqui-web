@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +67,32 @@ public class EventoRepository {
 
     public void cancelar(long id, String motivo) {
         jdbc.update("UPDATE evento SET estado = 'CANCELADO', motivo_cancelacion = ? WHERE id = ?", motivo, id);
+    }
+
+    // ---- busqueda por multiples criterios (WHERE dinamico) ----
+    public List<Evento> buscar(String tipo, Long organizadorId, String participante,
+                               String ciudad, LocalDate desde, LocalDate hasta, String orden) {
+        StringBuilder sql = new StringBuilder("SELECT e.* FROM evento e WHERE e.estado = 'PUBLICADO' ");
+        List<Object> p = new ArrayList<>();
+
+        if (tipo != null && !tipo.isBlank())        { sql.append("AND e.tipo = ? ");            p.add(tipo); }
+        if (organizadorId != null)                  { sql.append("AND e.organizador_id = ? ");  p.add(organizadorId); }
+        if (ciudad != null && !ciudad.isBlank())    { sql.append("AND e.ciudad = ? ");          p.add(ciudad); }
+        if (desde != null)                          { sql.append("AND e.fecha_hora >= ? ");     p.add(Timestamp.valueOf(desde.atStartOfDay())); }
+        if (hasta != null)                          { sql.append("AND e.fecha_hora < ? ");      p.add(Timestamp.valueOf(hasta.plusDays(1).atStartOfDay())); }
+        if (participante != null && !participante.isBlank()) {
+            sql.append("AND EXISTS (SELECT 1 FROM evento_participante ep ")
+               .append("JOIN participante pa ON pa.id = ep.participante_id ")
+               .append("WHERE ep.evento_id = e.id AND LOWER(pa.nombre) LIKE LOWER(?)) ");
+            p.add("%" + participante + "%");
+        }
+
+        if ("precio".equalsIgnoreCase(orden)) {
+            sql.append("ORDER BY (SELECT MIN(es.precio) FROM evento_sector es WHERE es.evento_id = e.id) ASC NULLS LAST");
+        } else { // fecha (default) y relevancia
+            sql.append("ORDER BY e.fecha_hora ASC");
+        }
+        return jdbc.query(sql.toString(), EVENTO, p.toArray());
     }
 
     // ---- evento_sector (precios por sector) ----
