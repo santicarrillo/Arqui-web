@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,5 +27,16 @@ public class LugaresController {
     @GetMapping("/{id}")
     public ResponseEntity<Dtos.LugarView> obtenerLugarPorId(@PathVariable Long id){
         return ResponseEntity.ok(service.obtenerLugarPorId(id));
+    }
+
+    @PostMapping("/{id}/sectores")
+    public ResponseEntity<Map<String, Long>> crearSector(@RequestBody Dtos.CrearSectorRequest req,@PathVariable Long id){
+        Long idSector = service.crearSector(id,req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",idSector));
+    }
+
+    @GetMapping("/{id}/sectores")
+    public ResponseEntity<List<Dtos.SectorView>> listarSectoresPorLugar(@PathVariable Long id){
+        return ResponseEntity.ok(service.listarSectoresPorLugar(id));
     }
 }
