@@ -90,4 +90,13 @@ public class LugaresService {
                 .map(s -> new Dtos.SectorView(s.id(), s.lugarId(), s.nombre(), s.numerado(), s.capacidad()))
                 .toList();
     }
+
+    public List<Dtos.AsientoView> listarAsientosPorSector(Long sectorId){
+        if(repository.buscarSectorPorId(sectorId).isEmpty()){
+            throw ApiException.notFound("SECTOR_NO_ENCONTRADO","No existe el sector con id "+sectorId);
+        }
+        return repository.listarAsientosPorSector(sectorId).stream()
+                .map(a -> new Dtos.AsientoView(a.id(),a.fila(),a.numero()))
+                .toList();
+    }
 }

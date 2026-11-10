@@ -37,6 +37,13 @@ public class LugaresRepository {
             rs.getInt("capacidad")
     );
 
+    private static final RowMapper<Asiento> MAPPER_ASIENTO = (rs, n) -> new Asiento(
+            rs.getLong("id"),
+            rs.getLong("sector_id"),
+            rs.getString("fila"),
+            rs.getString("numero")
+    );
+
 
     public Long guardarLugar(String nombre, String direccion, Double latitud, Double longitud, String ciudad){
         String sql= """
@@ -82,5 +89,17 @@ public class LugaresRepository {
             ps.setString(2, asiento.fila());
             ps.setString(3, asiento.numero());
         });
+    }
+
+    // Para poder validar si el sector existe antes de buscar sus asientos (o tirar 404)
+    public Optional<Sector> buscarSectorPorId(Long sectorId) {
+        String sql = "SELECT * FROM sector WHERE id = ?";
+        return jdbc.query(sql, MAPPER_SECTOR, sectorId).stream().findFirst();
+    }
+
+    // Para traer las butacas de un sector
+    public List<Asiento> listarAsientosPorSector(Long sectorId) {
+        String sql = "SELECT * FROM asiento WHERE sector_id = ? ORDER BY fila, numero";
+        return jdbc.query(sql, MAPPER_ASIENTO, sectorId);
     }
 }

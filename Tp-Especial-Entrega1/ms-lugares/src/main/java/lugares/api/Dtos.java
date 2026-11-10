@@ -40,4 +40,10 @@ public class Dtos {
             boolean numerado,
             int capacidad
     ) {}
+
+    public record AsientoView(
+            Long id,
+            String fila,
+            String numero
+    ) {}
 }
