@@ -11,5 +11,6 @@
     <modules>
         <module>ms-ventas</module>
         <module>ms-eventos</module>
+        <module>ms-lugares</module>
     </modules>
 </project>

@@ -1,0 +1,18 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: lugares-service
+  datasource:
+    # Si la variable de entorno LUGARES_DB_URL no existe, usa localhost:5435
+    url: ${LUGARES_DB_URL:jdbc:postgresql://localhost:5435/lugares}
+    username: ${LUGARES_DB_USER:lugares}
+    password: ${LUGARES_DB_PASSWORD:lugares}
+    hikari:
+      maximum-pool-size: 10
+  sql:
+    init:
+      # Ejecuta schema.sql automáticamente al arrancar la aplicación
+      mode: always
+      schema-locations: classpath:schema.sql
