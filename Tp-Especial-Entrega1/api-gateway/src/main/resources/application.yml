@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # 1. Rutas a usuarios-service (puerto 8081)
+        - id: usuarios-service
+          uri: ${USUARIOS_URL:http://localhost:8081}
+          predicates:
+            - Path=/usuarios/**
+
+        # 2. Rutas a eventos-service (puerto 8082)
+        - id: eventos-service
+          uri: ${EVENTOS_URL:http://localhost:8082}
+          predicates:
+            - Path=/eventos/**
+
+        # 3. Rutas a ventas-service (puerto 8083)
+        - id: ventas-service
+          uri: ${VENTAS_URL:http://localhost:8083}
+          predicates:
+            - Path=/compras/**, /entradas/**, /disponibilidad/**
+
+        # 4. Rutas a lugares-service (puerto 8084)
+        - id: lugares-service
+          uri: ${LUGARES_URL:http://localhost:8084}
+          predicates:
+            - Path=/lugares/**, /sectores/**
+
+logging:
+  level:
+    gateway: INFO
+    org.springframework.cloud.gateway: INFO
