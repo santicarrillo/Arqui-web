@@ -11,5 +11,7 @@
     <modules>
         <module>ms-ventas</module>
         <module>ms-eventos</module>
+        <module>ms-lugares</module>
+        <module>api-gateway</module>
     </modules>
 </project>

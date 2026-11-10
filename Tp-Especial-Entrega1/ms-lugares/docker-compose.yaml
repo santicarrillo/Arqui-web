@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lugares-db
+    environment:
+      POSTGRES_DB: lugares
+      POSTGRES_USER: lugares
+      POSTGRES_PASSWORD: lugares
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
