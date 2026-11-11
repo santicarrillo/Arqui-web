@@ -51,6 +51,11 @@ public class PagoService {
                 .orElseThrow(() -> new RuntimeException("Pago no encontrado para la compra: " + compraId));
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Pago> buscarOpcionalPorCompraId(Long compraId) {
+        return pagoRepository.findByCompraId(compraId);
+    }
+
     @Transactional
     public void procesarReintegro(Long pagoId, ReintegroRequestDTO request) {
         Pago pago = pagoRepository.findById(pagoId)

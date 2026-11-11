@@ -1,52 +1,58 @@
-version: '3.8'
+# docker-compose GENERAL del sistema TicketYa (Entrega 1).
+# Levanta SOLO las bases (una por microservicio). Los microservicios se corren
+# localmente desde el IDE (Entrega 1: "ejecucion local de los micros, bases con Docker").
+# Cada base usa el nombre/usuario/clave/puerto que espera el application.yml de su micro.
+#
+# Uso:  docker compose up -d        (levanta las 5 bases)
+#       docker compose down         (las baja)
 
 services:
   usuarios-db:
-    image: postgres:15
+    image: postgres:16
+    container_name: usuarios-db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: usuarios_db
+      POSTGRES_DB: usuarios
+      POSTGRES_USER: usuarios
+      POSTGRES_PASSWORD: usuarios
     ports:
-      - "5432:5432"
-    restart: always
-
-  lugares-db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: lugares_db
-    ports:
-      - "5433:5432"
-    restart: always
+      - "5437:5432"
 
   eventos-db:
-    image: postgres:15
+    image: postgres:16
+    container_name: eventos-db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: eventos_db
+      POSTGRES_DB: eventos
+      POSTGRES_USER: eventos
+      POSTGRES_PASSWORD: eventos
     ports:
       - "5434:5432"
-    restart: always
 
   ventas-db:
-    image: postgres:15
+    image: postgres:16
+    container_name: ventas-db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: ventas_db
+      POSTGRES_DB: ventas
+      POSTGRES_USER: ventas
+      POSTGRES_PASSWORD: ventas
+    ports:
+      - "5433:5432"
+
+  lugares-db:
+    image: postgres:16
+    container_name: lugares-db
+    environment:
+      POSTGRES_DB: lugares
+      POSTGRES_USER: lugares
+      POSTGRES_PASSWORD: lugares
     ports:
       - "5435:5432"
-    restart: always
 
   pagos-db:
-    image: postgres:15
+    image: postgres:16
+    container_name: pagos-db
     environment:
+      POSTGRES_DB: pagos_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: pagos_db
     ports:
       - "5436:5432"
-    restart: always

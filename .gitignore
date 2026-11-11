@@ -2,3 +2,5 @@
 .agents/
 graphify-out/
 docs/
+target/
+Claude outputs/

@@ -13,5 +13,6 @@
         <module>ms-eventos</module>
         <module>ms-lugares</module>
         <module>api-gateway</module>
+        <module>ms-usuarios</module>
     </modules>
 </project>

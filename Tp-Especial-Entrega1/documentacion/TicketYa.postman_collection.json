@@ -1,0 +1,563 @@
+{
+  "info": {
+    "name": "TicketYa - Entrega 1 (flujo completo)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Flujo de punta a punta del core de TicketYa (Entrega 1), vía API Gateway (8080). Corriendo la coleccion en orden tambien sirve de DATOS DE PRUEBA: crea usuarios, lugar, evento publicado, compra, pago y devolucion. El paso 'Inicializar disponibilidad' va directo a ventas (endpoint interno, no ruteado por el gateway)."
+  },
+  "variable": [
+    {
+      "key": "gateway",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "ventasDirecto",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "organizadorId",
+      "value": ""
+    },
+    {
+      "key": "clienteId",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "lugarId",
+      "value": ""
+    },
+    {
+      "key": "sectorNumId",
+      "value": ""
+    },
+    {
+      "key": "sectorZonaId",
+      "value": ""
+    },
+    {
+      "key": "asientoId",
+      "value": ""
+    },
+    {
+      "key": "eventoId",
+      "value": ""
+    },
+    {
+      "key": "compraId",
+      "value": ""
+    },
+    {
+      "key": "entradaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Usuarios",
+      "item": [
+        {
+          "name": "Crear organizador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Productora Rock\",\n  \"email\": \"org@ticketya.com\",\n  \"rol\": \"ORGANIZADOR\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"organizadorId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Cliente\",\n  \"email\": \"juan@ticketya.com\",\n  \"rol\": \"CLIENTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"clienteId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana Admin\",\n  \"email\": \"admin@ticketya.com\",\n  \"rol\": \"ADMINISTRADOR\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"adminId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/usuarios"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Lugares",
+      "item": [
+        {
+          "name": "Crear lugar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/lugares",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Estadio Unico\",\n  \"direccion\": \"Av. 25 de Mayo\",\n  \"latitud\": -34.912,\n  \"longitud\": -57.954,\n  \"ciudad\": \"La Plata\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"lugarId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear sector numerado (Platea)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/lugares/{{lugarId}}/sectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Platea A\",\n  \"numerado\": true,\n  \"totalFilas\": 5,\n  \"asientosPorFila\": 10\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"sectorNumId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear sector zona (Campo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/lugares/{{lugarId}}/sectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Campo\",\n  \"numerado\": false,\n  \"capacidad\": 5000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"sectorZonaId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver sectores del lugar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/lugares/{{lugarId}}/sectores"
+          }
+        },
+        {
+          "name": "Ver asientos del sector numerado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/sectores/{{sectorNumId}}/asientos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"asientoId\", d[0].id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Eventos",
+      "item": [
+        {
+          "name": "Crear evento (borrador)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/eventos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Recital de Rock\",\n  \"descripcion\": \"Gran show\",\n  \"tipo\": \"RECITAL\",\n  \"fechaHora\": \"2026-12-20T21:00:00\",\n  \"lugarId\": \"{{lugarId}}\",\n  \"ciudad\": \"La Plata\",\n  \"organizadorId\": \"{{organizadorId}}\",\n  \"limitePorCliente\": 4\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"eventoId\", d.id);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Configurar precios por sector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/eventos/{{eventoId}}/sectores",
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"sectorId\": \"{{sectorNumId}}\",\n    \"numerado\": true,\n    \"precio\": 15000\n  },\n  {\n    \"sectorId\": \"{{sectorZonaId}}\",\n    \"numerado\": false,\n    \"precio\": 8000\n  }\n]"
+            }
+          }
+        },
+        {
+          "name": "Agregar participante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/eventos/{{eventoId}}/participantes",
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"nombre\": \"La Banda\",\n    \"tipo\": \"ARTISTA\"\n  }\n]"
+            }
+          }
+        },
+        {
+          "name": "Publicar evento",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{gateway}}/eventos/{{eventoId}}/publicacion"
+          }
+        },
+        {
+          "name": "Inicializar disponibilidad (ventas, interno)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{ventasDirecto}}/interno/disponibilidad",
+            "description": "OJO: hoy este paso es MANUAL. Ver README/doc: lo ideal es que eventos lo dispare al publicar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventoId\": \"{{eventoId}}\",\n  \"sectores\": [\n    {\n      \"sectorId\": \"{{sectorNumId}}\",\n      \"numerado\": true\n    },\n    {\n      \"sectorId\": \"{{sectorZonaId}}\",\n      \"numerado\": false,\n      \"capacidad\": 5000\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Buscar eventos (por ciudad)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/eventos?ciudad=La Plata&orden=fecha"
+          }
+        },
+        {
+          "name": "Ver evento (contrato que usa ventas)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/eventos/{{eventoId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Compra",
+      "item": [
+        {
+          "name": "Consultar disponibilidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/disponibilidad?eventoId={{eventoId}}&sectorId={{sectorNumId}}"
+          }
+        },
+        {
+          "name": "Crear compra (reserva)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{clienteId}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/compras",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventoId\": \"{{eventoId}}\",\n  \"lugares\": [\n    {\n      \"sectorId\": \"{{sectorNumId}}\",\n      \"asientoId\": \"{{asientoId}}\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "pm.collectionVariables.set(\"compraId\", d.compraId);",
+                  "pm.test(\"status ok\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pagar compra (emite QR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{clienteId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/compras/{{compraId}}/pagar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medioPago\": \"TARJETA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let d = pm.response.json();",
+                  "if (d.detalle && d.detalle[0]) pm.collectionVariables.set(\"entradaId\", d.detalle[0].entradaId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis entradas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{clienteId}}"
+              }
+            ],
+            "url": "{{gateway}}/entradas"
+          }
+        },
+        {
+          "name": "Ver entrada con QR",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{clienteId}}"
+              }
+            ],
+            "url": "{{gateway}}/entradas/{{entradaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Devoluciones",
+      "item": [
+        {
+          "name": "Solicitar devolucion (cliente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{clienteId}}"
+              }
+            ],
+            "url": "{{gateway}}/entradas/{{entradaId}}/devolucion"
+          }
+        },
+        {
+          "name": "Resolver devolucion (admin aprueba)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              },
+              {
+                "key": "X-Rol",
+                "value": "ADMINISTRADOR"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway}}/entradas/{{entradaId}}/devolucion",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aprobar\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar devoluciones (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Rol",
+                "value": "ADMINISTRADOR"
+              }
+            ],
+            "url": "{{gateway}}/devoluciones"
+          }
+        }
+      ]
+    }
+  ]
+}

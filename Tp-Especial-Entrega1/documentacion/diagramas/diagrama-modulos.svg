@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="880" viewBox="0 0 1240 880" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#334155"/></marker>
+    <marker id="mg" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#1d6fb8"/></marker>
+    <marker id="mo" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#b4530a"/></marker>
+  </defs>
+  <rect width="1240" height="880" fill="#ffffff"/>
+
+  <text x="40" y="46" font-size="26" font-weight="700" fill="#0B3D66">TicketYa — Diagrama de módulos (Entrega 1)</text>
+  <line x1="40" y1="58" x2="1200" y2="58" stroke="#0B3D66" stroke-width="2"/>
+  <text x="40" y="84" font-size="14" fill="#64748b">Los clientes externos entran SOLO por el API Gateway. Cada microservicio tiene su propia base. Las flechas punteadas son llamadas REST entre servicios.</text>
+
+  <!-- Actores -->
+  <g font-size="13.5">
+    <rect x="40" y="150" width="160" height="70" rx="9" fill="#EEF2F6" stroke="#64748b" stroke-width="1.8"/>
+    <text x="120" y="182" text-anchor="middle" font-weight="700" fill="#334155">Cliente</text>
+    <text x="120" y="202" text-anchor="middle" fill="#64748b" font-size="12">app web / móvil</text>
+
+    <rect x="40" y="360" width="160" height="70" rx="9" fill="#EEF2F6" stroke="#64748b" stroke-width="1.8"/>
+    <text x="120" y="392" text-anchor="middle" font-weight="700" fill="#334155">Organizador</text>
+    <text x="120" y="412" text-anchor="middle" fill="#64748b" font-size="12">portal</text>
+
+    <rect x="40" y="570" width="160" height="70" rx="9" fill="#EEF2F6" stroke="#64748b" stroke-width="1.8"/>
+    <text x="120" y="602" text-anchor="middle" font-weight="700" fill="#334155">Administrador</text>
+    <text x="120" y="622" text-anchor="middle" fill="#64748b" font-size="12">backoffice</text>
+  </g>
+
+  <!-- Gateway -->
+  <rect x="260" y="150" width="150" height="490" rx="12" fill="#DCEBFA" stroke="#1d6fb8" stroke-width="2.5"/>
+  <text x="335" y="385" text-anchor="middle" font-size="18" font-weight="700" fill="#0B3D66" transform="rotate(-90 335 385)">API GATEWAY</text>
+  <text x="335" y="408" text-anchor="middle" font-size="12" fill="#1d6fb8" transform="rotate(-90 408 408)"></text>
+  <text x="335" y="620" text-anchor="middle" font-size="11.5" fill="#1d6fb8">punto de entrada único</text>
+
+  <!-- Servicios -->
+  <g font-size="15">
+    <rect x="520" y="140" width="250" height="78" rx="10" fill="#F4F6F8" stroke="#0B3D66" stroke-width="2"/>
+    <rect x="520" y="140" width="250" height="30" rx="10" fill="#0B3D66"/>
+    <text x="645" y="161" text-anchor="middle" font-weight="700" fill="#fff" font-size="14">eventos-service</text>
+    <text x="645" y="198" text-anchor="middle" font-size="12" fill="#475569">eventos · tarifas · búsqueda</text>
+
+    <rect x="520" y="250" width="250" height="78" rx="10" fill="#F4F6F8" stroke="#0B3D66" stroke-width="2"/>
+    <rect x="520" y="250" width="250" height="30" rx="10" fill="#0B3D66"/>
+    <text x="645" y="271" text-anchor="middle" font-weight="700" fill="#fff" font-size="14">lugares-service</text>
+    <text x="645" y="308" text-anchor="middle" font-size="12" fill="#475569">lugares · sectores · capacidad</text>
+
+    <rect x="520" y="360" width="250" height="78" rx="10" fill="#F4F6F8" stroke="#0B3D66" stroke-width="2"/>
+    <rect x="520" y="360" width="250" height="30" rx="10" fill="#0B3D66"/>
+    <text x="645" y="381" text-anchor="middle" font-weight="700" fill="#fff" font-size="14">usuarios-service</text>
+    <text x="645" y="418" text-anchor="middle" font-size="12" fill="#475569">usuarios (rol: cliente/org/admin)</text>
+
+    <rect x="520" y="470" width="250" height="88" rx="10" fill="#EAF2FB" stroke="#1d6fb8" stroke-width="2.8"/>
+    <rect x="520" y="470" width="250" height="30" rx="10" fill="#1d6fb8"/>
+    <text x="645" y="491" text-anchor="middle" font-weight="700" fill="#fff" font-size="14">ventas-service</text>
+    <text x="645" y="520" text-anchor="middle" font-size="12" fill="#1d6fb8" font-weight="700">compra · detalle · QR · doble venta</text>
+    <text x="645" y="540" text-anchor="middle" font-size="12" fill="#1d6fb8" font-weight="700">evento_asiento+cupo · idempotencia · devoluc.</text>
+
+    <rect x="520" y="600" width="250" height="78" rx="10" fill="#FFF4EA" stroke="#b4530a" stroke-width="2"/>
+    <rect x="520" y="600" width="250" height="30" rx="10" fill="#b4530a"/>
+    <text x="645" y="621" text-anchor="middle" font-weight="700" fill="#fff" font-size="14">pagos-service (mock)</text>
+    <text x="645" y="658" text-anchor="middle" font-size="12" fill="#8a4208">cobro y reintegro simulados</text>
+  </g>
+
+  <!-- Bases de datos -->
+  <g>
+    <g transform="translate(880,152)"><ellipse cx="45" cy="12" rx="45" ry="11" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><path d="M0 12 v44 a45 11 0 0 0 90 0 v-44" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><text x="45" y="42" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="700">eventos_db</text></g>
+    <g transform="translate(880,262)"><ellipse cx="45" cy="12" rx="45" ry="11" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><path d="M0 12 v44 a45 11 0 0 0 90 0 v-44" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><text x="45" y="42" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="700">lugares_db</text></g>
+    <g transform="translate(880,372)"><ellipse cx="45" cy="12" rx="45" ry="11" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><path d="M0 12 v44 a45 11 0 0 0 90 0 v-44" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><text x="45" y="42" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="700">usuarios_db</text></g>
+    <g transform="translate(880,487)"><ellipse cx="45" cy="12" rx="45" ry="11" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><path d="M0 12 v44 a45 11 0 0 0 90 0 v-44" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><text x="45" y="42" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="700">ventas_db</text></g>
+    <g transform="translate(880,602)"><ellipse cx="45" cy="12" rx="45" ry="11" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><path d="M0 12 v44 a45 11 0 0 0 90 0 v-44" fill="#E7EFE9" stroke="#1f8a54" stroke-width="1.8"/><text x="45" y="42" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="700">pagos_db</text></g>
+  </g>
+
+  <!-- actores -> gateway -->
+  <line x1="200" y1="185" x2="260" y2="250" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <line x1="200" y1="395" x2="260" y2="395" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <line x1="200" y1="605" x2="260" y2="540" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <text x="222" y="300" font-size="11" fill="#64748b" transform="rotate(42 222 300)">HTTPS</text>
+
+  <!-- gateway -> servicios -->
+  <line x1="410" y1="200" x2="520" y2="179" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <line x1="410" y1="260" x2="520" y2="289" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <line x1="410" y1="360" x2="520" y2="399" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <line x1="410" y1="470" x2="520" y2="510" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+
+  <!-- servicio -> su base -->
+  <line x1="770" y1="179" x2="878" y2="179" stroke="#1f8a54" stroke-width="1.8" marker-end="url(#mg)" opacity="0.0"/>
+  <line x1="770" y1="179" x2="876" y2="179" stroke="#1f8a54" stroke-width="1.8"/>
+  <line x1="770" y1="289" x2="876" y2="289" stroke="#1f8a54" stroke-width="1.8"/>
+  <line x1="770" y1="399" x2="876" y2="399" stroke="#1f8a54" stroke-width="1.8"/>
+  <line x1="770" y1="514" x2="876" y2="514" stroke="#1f8a54" stroke-width="1.8"/>
+  <line x1="770" y1="629" x2="876" y2="629" stroke="#1f8a54" stroke-width="1.8"/>
+
+  <!-- ventas -> pagos (REST) -->
+  <path d="M645 558 L645 600" fill="none" stroke="#b4530a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#mo)"/>
+  <text x="655" y="582" font-size="11.5" fill="#b4530a">cobro</text>
+
+  <!-- ventas -> eventos/lugares/clientes (REST, lee datos) -->
+  <path d="M520 495 C 470 470, 470 200, 518 182" fill="none" stroke="#1d6fb8" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+  <path d="M510 500 C 480 480, 480 300, 518 292" fill="none" stroke="#1d6fb8" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+  <path d="M500 505 C 490 495, 490 405, 518 402" fill="none" stroke="#1d6fb8" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+  <text x="430" y="455" font-size="11.5" fill="#1d6fb8">lee datos (REST):</text>
+  <text x="430" y="471" font-size="11.5" fill="#1d6fb8">evento, sector, usuario</text>
+
+  <!-- leyenda -->
+  <rect x="40" y="720" width="1160" height="120" rx="10" fill="#F8FAFC" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="748" font-size="14" font-weight="700" fill="#0B3D66">Referencias</text>
+  <line x1="60" y1="770" x2="100" y2="770" stroke="#334155" stroke-width="2" marker-end="url(#m)"/>
+  <text x="110" y="774" font-size="12.5" fill="#1e293b">Llamada HTTP del cliente / ruteo del gateway (síncrono)</text>
+  <line x1="60" y1="796" x2="100" y2="796" stroke="#1d6fb8" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+  <text x="110" y="800" font-size="12.5" fill="#1e293b">Llamada REST entre microservicios (ventas pide datos a otro servicio)</text>
+  <line x1="640" y1="770" x2="680" y2="770" stroke="#b4530a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#mo)"/>
+  <text x="690" y="774" font-size="12.5" fill="#1e293b">Cobro / reintegro contra la pasarela mock</text>
+  <line x1="640" y1="796" x2="680" y2="796" stroke="#1f8a54" stroke-width="1.8"/>
+  <text x="690" y="800" font-size="12.5" fill="#1e293b">Acceso de cada servicio a su propia base (nadie entra a la base de otro)</text>
+  <text x="60" y="826" font-size="11.5" fill="#64748b" font-style="italic">En la Entrega 2 el gateway suma validación de JWT, y al menos un servicio pasa a una base NoSQL (Mongo).</text>
+</svg>
