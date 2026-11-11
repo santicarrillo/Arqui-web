@@ -23,7 +23,7 @@ spring:
         - id: ventas-service
           uri: ${VENTAS_URL:http://localhost:8083}
           predicates:
-            - Path=/compras/**, /entradas/**, /disponibilidad/**
+            - Path=/compras/**, /entradas/**, /disponibilidad/**, /devoluciones/**
 
         # 4. Rutas a lugares-service (puerto 8084)
         - id: lugares-service

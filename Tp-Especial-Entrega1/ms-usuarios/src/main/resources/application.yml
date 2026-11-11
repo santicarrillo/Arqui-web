@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: usuarios-service
+  datasource:
+    url: ${USUARIOS_DB_URL:jdbc:postgresql://localhost:5437/usuarios}
+    username: ${USUARIOS_DB_USER:usuarios}
+    password: ${USUARIOS_DB_PASSWORD:usuarios}
+    hikari:
+      maximum-pool-size: 10
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql

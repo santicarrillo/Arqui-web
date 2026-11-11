@@ -1,0 +1,10 @@
+services:
+  usuarios-db:
+    image: postgres:16
+    container_name: usuarios-db
+    environment:
+      POSTGRES_DB: usuarios
+      POSTGRES_USER: usuarios
+      POSTGRES_PASSWORD: usuarios
+    ports:
+      - "5437:5432"

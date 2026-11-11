@@ -31,7 +31,7 @@ import ventas.repository.DevolucionRepository.EntradaDeCompra;
 @Service
 public class DevolucionService {
 
-    private static final String ROL_ADMIN = "ADMIN";
+    private static final String ROL_ADMIN = "ADMINISTRADOR";
     private static final Set<String> ESTADOS = Set.of("PENDIENTE", "APROBADA", "RECHAZADA");
 
     private final DevolucionRepository repo;

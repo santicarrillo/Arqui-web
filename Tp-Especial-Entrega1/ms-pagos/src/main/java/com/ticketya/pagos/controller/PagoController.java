@@ -43,16 +43,11 @@ public class PagoController {
     // GET /pagos?compraId=123 (Ventas llama acá al reintentar un pago)
     @GetMapping
     public ResponseEntity<PagoResponseDTO> consultarPago(@RequestParam Long compraId) {
-        Pago pago = pagoService.buscarPorCompraId(compraId);
-
-        PagoResponseDTO response = new PagoResponseDTO(
-                pago.getId(),
-                pago.getCompraId(),
-                pago.getMonto(),
-                pago.getEstado(),
-                pago.getFecha()
-        );
-        return ResponseEntity.ok(response);
+        // Si no hay pago para esa compra devolvemos 404 (no 500): ventas lo toma como "todavia no se cobro".
+        return pagoService.buscarOpcionalPorCompraId(compraId)
+                .map(pago -> ResponseEntity.ok(new PagoResponseDTO(
+                        pago.getId(), pago.getCompraId(), pago.getMonto(), pago.getEstado(), pago.getFecha())))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // POST /pagos/{id}/reintegro (Ventas llama acá cuando se aprueba una devolución)
