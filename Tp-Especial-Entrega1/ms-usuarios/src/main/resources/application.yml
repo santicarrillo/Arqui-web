@@ -14,3 +14,8 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
+
+# Entrega 2: clave para firmar el JWT. DEBE ser identica a la del api-gateway.
+jwt:
+  secret: ${JWT_SECRET:clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes}
+  expiracion-segundos: ${JWT_EXPIRACION_SEG:3600}
