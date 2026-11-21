@@ -2,6 +2,7 @@
 # Levanta SOLO las bases (una por microservicio). Los microservicios se corren
 # localmente desde el IDE (Entrega 1: "ejecucion local de los micros, bases con Docker").
 # Cada base usa el nombre/usuario/clave/puerto que espera el application.yml de su micro.
+# Cuatro son PostgreSQL; eventos es MongoDB.
 #
 # Uso:  docker compose up -d        (levanta las 5 bases)
 #       docker compose down         (las baja)
@@ -17,15 +18,17 @@ services:
     ports:
       - "5437:5432"
 
+  # eventos usa MongoDB (base documental) con usuario y contrasena: ver documentacion/05-mongodb-eventos.md
   eventos-db:
-    image: postgres:16
+    image: mongo:7.0.11
     container_name: eventos-db
+    command: ["--auth"]
     environment:
-      POSTGRES_DB: eventos
-      POSTGRES_USER: eventos
-      POSTGRES_PASSWORD: eventos
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: eventos
     ports:
-      - "5434:5432"
+      - "127.0.0.1:27017:27017"
 
   ventas-db:
     image: postgres:16

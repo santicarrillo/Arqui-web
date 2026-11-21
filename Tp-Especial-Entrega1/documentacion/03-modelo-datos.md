@@ -6,12 +6,15 @@ de otras bases se guardan como número (marcados *ref*). Ver `diagramas/diagrama
 ## usuarios_db (`ms-usuarios`)
 - **usuario**(`id` PK, `nombre`, `email` UNIQUE, `rol`) — rol ∈ {CLIENTE, ORGANIZADOR, ADMINISTRADOR, ACCESO}.
 
-## eventos_db (`ms-eventos`)
-- **evento**(`id` PK, `nombre`, `descripcion`, `tipo`, `fecha_hora`, `estado`, `lugar_id`*, `ciudad` [copia], `organizador_id`*, `limite_por_cliente`, `motivo_cancelacion`)
+## eventos (`ms-eventos`, MongoDB)
+- Colección **eventos**: un documento por evento con `_id` (numérico), `nombre`, `descripcion`, `tipo`,
+  `fechaHora`, `estado`, `lugarId`*, `ciudad` [copia], `organizadorId`*, `limitePorCliente`,
+  `motivoCancelacion` y dos arreglos embebidos:
+  - `sectores`: `{sectorId*, numerado, precio}` — precio del sector para ese evento (antes `evento_sector`).
+  - `participantes`: `{nombre, tipo}` — artistas, equipos o disertantes (antes `participante` + `evento_participante`).
   — estado ∈ {BORRADOR, PUBLICADO, AGOTADO, CANCELADO, FINALIZADO}.
-- **participante**(`id` PK, `nombre`, `tipo`)
-- **evento_participante**(`evento_id` FK, `participante_id` FK) — PK compuesta (N:M).
-- **evento_sector**(`evento_id` FK, `sector_id`*, `numerado`, `precio`) — PK (evento, sector). Precio del sector para ese evento.
+- Colección **contadores**: `{_id: "eventos", valor}` — genera los ids numéricos que usan los demás servicios.
+- Detalle y justificación en [05-mongodb-eventos.md](05-mongodb-eventos.md).
 
 ## lugares_db (`ms-lugares`)
 - **lugar**(`id` PK, `nombre`, `direccion`, `latitud`, `longitud`, `ciudad`)
@@ -36,9 +39,9 @@ de otras bases se guardan como número (marcados *ref*). Ver `diagramas/diagrama
 | **usuario** (usuarios) | eventos (`organizador_id`); ventas (`compra.cliente_id`, `devolucion.admin_id`) |
 | **evento** (eventos) | ventas (`compra`, `evento_asiento`, `cupo_sector`); `evento_fecha_hora` copiada en compra (regla 72 h) |
 | **lugar** (lugares) | eventos (`evento.lugar_id`); `ciudad` copiada en evento (para la búsqueda) |
-| **sector** (lugares) | eventos (`evento_sector`); ventas (`detalle_compra`, `evento_asiento`, `cupo_sector`) |
+| **sector** (lugares) | eventos (`sectores` del documento); ventas (`detalle_compra`, `evento_asiento`, `cupo_sector`) |
 | **asiento** (lugares) | ventas (`detalle_compra`, `evento_asiento`) |
 
 **Copias deliberadas** (desnormalización entre servicios): `ciudad` en evento, `evento_fecha_hora` en
-compra, `capacidad` en cupo_sector, `numerado`/`precio` en evento_sector. Evitan llamadas en el
+compra, `capacidad` en cupo_sector, `numerado`/`precio` en los sectores del evento. Evitan llamadas en el
 camino caliente.
