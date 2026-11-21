@@ -1,3 +1,4 @@
 package eventos.Domains;
 
-public record Participante(Long id, String nombre, String tipo) {}
+/** Artista, equipo o disertante de un evento. Va embebido en el documento del evento. */
+public record Participante(String nombre, String tipo) {}

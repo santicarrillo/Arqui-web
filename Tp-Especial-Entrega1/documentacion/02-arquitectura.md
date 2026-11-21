@@ -3,8 +3,9 @@
 ## Estilo
 Microservicios **Spring Boot** independientes, cada uno con su propia base de datos (esquema
 separado), comunicados por **REST síncrono**. Un **API Gateway** es el único punto de entrada de los
-clientes externos. Persistencia relacional (PostgreSQL) con **JDBC** (`JdbcTemplate`) en todos los
-micros salvo `ms-pagos`, que usa JPA.
+clientes externos. Persistencia relacional (PostgreSQL) en todos los micros salvo `ms-eventos`, que
+usa **MongoDB** (ver [05-mongodb-eventos.md](05-mongodb-eventos.md)). Los relacionales usan **JDBC**
+(`JdbcTemplate`), salvo `ms-pagos`, que usa JPA.
 
 > La base NoSQL, la autenticación con JWT, la cache, la resiliencia y la bitácora centralizada son
 > parte de la **Entrega 2**.

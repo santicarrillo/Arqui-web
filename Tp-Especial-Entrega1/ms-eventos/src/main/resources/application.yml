@@ -4,16 +4,14 @@ server:
 spring:
   application:
     name: eventos-service
-  datasource:
-    url: ${EVENTOS_DB_URL:jdbc:postgresql://localhost:5434/eventos}
-    username: ${EVENTOS_DB_USER:eventos}
-    password: ${EVENTOS_DB_PASSWORD:eventos}
-    hikari:
-      maximum-pool-size: 10
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
+  data:
+    mongodb:
+      # Base documental: cada evento es un documento con sus sectores y participantes adentro.
+      # La base corre con usuario y contrasena (--auth); el usuario root se crea en la base "admin",
+      # por eso authSource=admin. En Docker se pisa con la variable EVENTOS_MONGO_URI.
+      uri: ${EVENTOS_MONGO_URI:mongodb://root:password@localhost:27017/eventos?authSource=admin}
+      # Crea los indices declarados en Evento (@Indexed, @CompoundIndex) al arrancar
+      auto-index-creation: true
 
 # lugares nos dice si un sector es numerado; lo copiamos al cargar precios
 servicios:

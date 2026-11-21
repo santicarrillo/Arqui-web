@@ -1,131 +1,162 @@
 package eventos.repository;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
 import eventos.Domains.Evento;
 import eventos.Domains.EventoSector;
+import eventos.Domains.Participante;
 import eventos.api.Dtos;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.bson.Document;
+import org.bson.types.Decimal128;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
+/**
+ * Acceso a la coleccion "eventos" de MongoDB.
+ * Cada metodo que modifica un evento es una sola operacion sobre un solo documento, y en MongoDB
+ * eso es atomico: no hacen falta transacciones.
+ */
 @Repository
 public class EventoRepository {
 
-    private final JdbcTemplate jdbc;
+    private static final String CONTADORES = "contadores";
 
-    public EventoRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    private final MongoTemplate mongo;
+
+    public EventoRepository(MongoTemplate mongo) {
+        this.mongo = mongo;
     }
 
-    // ---- mapeos: una fila de la base -> un objeto ----
-    private static final RowMapper<Evento> EVENTO = (rs, n) -> new Evento(
-            rs.getLong("id"),
-            rs.getString("nombre"),
-            rs.getString("descripcion"),
-            rs.getString("tipo"),
-            rs.getTimestamp("fecha_hora").toLocalDateTime(),
-            rs.getString("estado"),
-            rs.getLong("lugar_id"),
-            rs.getString("ciudad"),
-            rs.getLong("organizador_id"),
-            rs.getInt("limite_por_cliente"),
-            rs.getString("motivo_cancelacion")
-    );
-
-    private static final RowMapper<EventoSector> SECTOR = (rs, n) -> new EventoSector(
-            rs.getLong("evento_id"),
-            rs.getLong("sector_id"),
-            rs.getBoolean("numerado"),
-            rs.getBigDecimal("precio")
-    );
-
     // ---- evento ----
+
     public long crear(Dtos.CrearEventoRequest r) {
-        return jdbc.queryForObject("""
-                INSERT INTO evento (nombre, descripcion, tipo, fecha_hora, estado,
-                                    lugar_id, ciudad, organizador_id, limite_por_cliente)
-                VALUES (?, ?, ?, ?, 'BORRADOR', ?, ?, ?, ?)
-                RETURNING id
-                """, Long.class,
-                r.nombre(), r.descripcion(), r.tipo(), Timestamp.valueOf(r.fechaHora()),
+        long id = siguienteId("eventos");
+        mongo.insert(new Evento(id, r.nombre(), r.descripcion(), r.tipo(), r.fechaHora(), "BORRADOR",
                 r.lugarId(), r.ciudad(), r.organizadorId(),
-                r.limitePorCliente() == null ? 6 : r.limitePorCliente());
+                r.limitePorCliente() == null ? 6 : r.limitePorCliente(),
+                null, List.of(), List.of()));
+        return id;
     }
 
     public Optional<Evento> buscarPorId(long id) {
-        return jdbc.query("SELECT * FROM evento WHERE id = ?", EVENTO, id).stream().findFirst();
+        return Optional.ofNullable(mongo.findById(id, Evento.class));
     }
 
     public void cambiarEstado(long id, String estado) {
-        jdbc.update("UPDATE evento SET estado = ? WHERE id = ?", estado, id);
+        mongo.updateFirst(porId(id), new Update().set("estado", estado), Evento.class);
     }
 
     public void cancelar(long id, String motivo) {
-        jdbc.update("UPDATE evento SET estado = 'CANCELADO', motivo_cancelacion = ? WHERE id = ?", motivo, id);
+        mongo.updateFirst(porId(id),
+                new Update().set("estado", "CANCELADO").set("motivoCancelacion", motivo),
+                Evento.class);
     }
 
-    // ---- busqueda por multiples criterios (WHERE dinamico) ----
+    // ---- busqueda por multiples criterios (los filtros que vienen se suman al query) ----
+
     public List<Evento> buscar(String tipo, Long organizadorId, String participante,
                                String ciudad, LocalDate desde, LocalDate hasta, String orden) {
-        StringBuilder sql = new StringBuilder("SELECT e.* FROM evento e WHERE e.estado = 'PUBLICADO' ");
-        List<Object> p = new ArrayList<>();
+        Criteria c = Criteria.where("estado").is("PUBLICADO");
 
-        if (tipo != null && !tipo.isBlank())        { sql.append("AND e.tipo = ? ");            p.add(tipo); }
-        if (organizadorId != null)                  { sql.append("AND e.organizador_id = ? ");  p.add(organizadorId); }
-        if (ciudad != null && !ciudad.isBlank())    { sql.append("AND e.ciudad = ? ");          p.add(ciudad); }
-        if (desde != null)                          { sql.append("AND e.fecha_hora >= ? ");     p.add(Timestamp.valueOf(desde.atStartOfDay())); }
-        if (hasta != null)                          { sql.append("AND e.fecha_hora < ? ");      p.add(Timestamp.valueOf(hasta.plusDays(1).atStartOfDay())); }
-        if (participante != null && !participante.isBlank()) {
-            sql.append("AND EXISTS (SELECT 1 FROM evento_participante ep ")
-               .append("JOIN participante pa ON pa.id = ep.participante_id ")
-               .append("WHERE ep.evento_id = e.id AND LOWER(pa.nombre) LIKE LOWER(?)) ");
-            p.add("%" + participante + "%");
+        if (tieneTexto(tipo))       c.and("tipo").is(tipo);
+        if (organizadorId != null)  c.and("organizadorId").is(organizadorId);
+        if (tieneTexto(ciudad))     c.and("ciudad").is(ciudad);
+        if (desde != null || hasta != null) {
+            Criteria fecha = c.and("fechaHora");
+            if (desde != null) fecha.gte(desde.atStartOfDay());
+            if (hasta != null) fecha.lt(hasta.plusDays(1).atStartOfDay());
+        }
+        if (tieneTexto(participante)) {
+            // busca dentro del arreglo embebido: "contiene", sin importar mayusculas
+            c.and("participantes.nombre")
+             .regex(Pattern.compile(Pattern.quote(participante), Pattern.CASE_INSENSITIVE));
         }
 
+        Query query = Query.query(c);
         if ("precio".equalsIgnoreCase(orden)) {
-            sql.append("ORDER BY (SELECT MIN(es.precio) FROM evento_sector es WHERE es.evento_id = e.id) ASC NULLS LAST");
-        } else { // fecha (default) y relevancia
-            sql.append("ORDER BY e.fecha_hora ASC");
+            // El precio mas bajo sale de los sectores embebidos. Para el volumen del TP se ordena aca;
+            // con muchos eventos se haria en la base con una agregacion ($min sobre sectores.precio).
+            Comparator<BigDecimal> menorPrimero = Comparator.nullsLast(Comparator.naturalOrder());
+            return mongo.find(query, Evento.class).stream()
+                    .sorted(Comparator.comparing(EventoRepository::precioMinimo, menorPrimero)
+                            .thenComparing(Evento::fechaHora))
+                    .toList();
         }
-        return jdbc.query(sql.toString(), EVENTO, p.toArray());
+        // fecha (default) y relevancia
+        query.with(Sort.by(Sort.Direction.ASC, "fechaHora"));
+        return mongo.find(query, Evento.class);
     }
 
-    // ---- evento_sector (precios por sector) ----
+    // ---- precios por sector (arreglo "sectores" del documento) ----
+
     public void guardarSector(long eventoId, Dtos.SectorPrecioRequest s) {
-        jdbc.update("""
-                INSERT INTO evento_sector (evento_id, sector_id, numerado, precio)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT (evento_id, sector_id)
-                DO UPDATE SET numerado = EXCLUDED.numerado, precio = EXCLUDED.precio
-                """, eventoId, s.sectorId(), s.numerado(), s.precio());
+        // 1) si el sector ya esta en el arreglo, se actualiza en su lugar ($ = el elemento que coincidio)
+        UpdateResult actualizado = mongo.updateFirst(
+                Query.query(Criteria.where("_id").is(eventoId).and("sectores.sectorId").is(s.sectorId())),
+                new Update().set("sectores.$.numerado", s.numerado())
+                            .set("sectores.$.precio", new Decimal128(s.precio())),
+                Evento.class);
+
+        // 2) si no estaba, se agrega. La condicion "ne" evita duplicarlo si dos pedidos llegan a la vez.
+        if (actualizado.getMatchedCount() == 0) {
+            mongo.updateFirst(
+                    Query.query(Criteria.where("_id").is(eventoId).and("sectores.sectorId").ne(s.sectorId())),
+                    new Update().push("sectores", new EventoSector(s.sectorId(), s.numerado(), s.precio())),
+                    Evento.class);
+        }
     }
 
-    public List<EventoSector> sectoresDe(long eventoId) {
-        return jdbc.query("SELECT * FROM evento_sector WHERE evento_id = ?", SECTOR, eventoId);
+    // ---- participantes (arreglo "participantes" del documento) ----
+
+    public void agregarParticipantes(long eventoId, List<Participante> participantes) {
+        mongo.updateFirst(porId(eventoId),
+                new Update().push("participantes").each(participantes.toArray()),
+                Evento.class);
     }
 
-    public boolean tieneSectores(long eventoId) {
-        Integer n = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM evento_sector WHERE evento_id = ?", Integer.class, eventoId);
-        return n != null && n > 0;
+    // ---- auxiliares ----
+
+    /**
+     * MongoDB genera ids de tipo ObjectId, pero el resto del sistema usa ids numericos.
+     * Se lleva un contador por coleccion: el incremento es atomico, asi que dos eventos creados
+     * a la vez nunca reciben el mismo id.
+     */
+    private long siguienteId(String coleccion) {
+        Document contador = mongo.getCollection(CONTADORES).findOneAndUpdate(
+                Filters.eq("_id", coleccion),
+                Updates.inc("valor", 1L),
+                new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER));
+        return contador.get("valor", Number.class).longValue();
     }
 
-    // ---- participantes ----
-    public long crearParticipante(String nombre, String tipo) {
-        return jdbc.queryForObject(
-                "INSERT INTO participante (nombre, tipo) VALUES (?, ?) RETURNING id",
-                Long.class, nombre, tipo);
+    private static Query porId(long id) {
+        return Query.query(Criteria.where("_id").is(id));
     }
 
-    public void vincularParticipante(long eventoId, long participanteId) {
-        jdbc.update("""
-                INSERT INTO evento_participante (evento_id, participante_id)
-                VALUES (?, ?) ON CONFLICT DO NOTHING
-                """, eventoId, participanteId);
+    private static BigDecimal precioMinimo(Evento e) {
+        return e.sectores().stream()
+                .map(EventoSector::precio)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+    }
+
+    private static boolean tieneTexto(String s) {
+        return s != null && !s.isBlank();
     }
 }

@@ -16,7 +16,7 @@ cancelación de eventos.
 |---------------|:------:|:---------------------------:|-----------------|
 | api-gateway   | 8080   | —                           | Único punto de entrada; rutea a los micros |
 | ms-usuarios   | 8081   | usuarios (5437)             | Alta y consulta de usuarios con rol |
-| ms-eventos    | 8082   | eventos (5434)              | Eventos, precios por sector, publicación, cancelación, búsqueda |
+| ms-eventos    | 8082   | eventos, MongoDB (27017)    | Eventos, precios por sector, publicación, cancelación, búsqueda |
 | ms-ventas     | 8083   | ventas (5433)               | Compra, reserva, no-doble-venta, pago, entradas/QR, devoluciones |
 | ms-lugares    | 8084   | lugares (5435)              | Lugares, sectores (numerado/zona) y asientos |
 | ms-pagos      | 8085   | pagos_db (5436)             | Pasarela de pagos simulada (cobro / reintegro) |

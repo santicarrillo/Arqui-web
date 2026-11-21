@@ -1,10 +1,11 @@
 services:
   eventos-db:
-    image: postgres:16
+    image: mongo:7.0.11
     container_name: eventos-db
+    command: ["--auth"]
     environment:
-      POSTGRES_DB: eventos
-      POSTGRES_USER: eventos
-      POSTGRES_PASSWORD: eventos
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: eventos
     ports:
-      - "5434:5432"
+      - "127.0.0.1:27017:27017"
