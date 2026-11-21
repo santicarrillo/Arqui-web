@@ -1,5 +1,6 @@
 package usuarios.repository;
 
+import usuarios.Domains.Credencial;
 import usuarios.Domains.Usuario;
 import usuarios.api.Dtos;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,14 +27,22 @@ public class UsuarioRepository {
             rs.getString("rol")
     );
 
-    public long crear(Dtos.CrearUsuarioRequest r) {
+    public long crear(Dtos.CrearUsuarioRequest r, String passwordHash) {
         return jdbc.queryForObject(
-                "INSERT INTO usuario (nombre, email, rol) VALUES (?, ?, ?) RETURNING id",
-                Long.class, r.nombre(), r.email(), r.rol());
+                "INSERT INTO usuario (nombre, email, rol, password_hash) VALUES (?, ?, ?, ?) RETURNING id",
+                Long.class, r.nombre(), r.email(), r.rol(), passwordHash);
     }
 
     public Optional<Usuario> buscarPorId(long id) {
         return jdbc.query("SELECT * FROM usuario WHERE id = ?", USUARIO, id).stream().findFirst();
+    }
+
+    // Login: trae id, rol y hash para comparar. Case-insensitive sobre el email.
+    public Optional<Credencial> buscarCredencialPorEmail(String email) {
+        return jdbc.query(
+                "SELECT id, rol, password_hash FROM usuario WHERE LOWER(email) = LOWER(?)",
+                (rs, n) -> new Credencial(rs.getLong("id"), rs.getString("rol"), rs.getString("password_hash")),
+                email).stream().findFirst();
     }
 
     public boolean existeEmail(String email) {
