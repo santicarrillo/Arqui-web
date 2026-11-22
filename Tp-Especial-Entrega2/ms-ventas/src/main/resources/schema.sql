@@ -71,3 +71,8 @@ CREATE TABLE IF NOT EXISTS cupo_sector (
     PRIMARY KEY (evento_id, sector_id),
     CHECK (ocupados >= 0 AND ocupados <= capacidad)
 );
+
+-- Entrega 2 (F6): control de acceso con QR. Cuando y quien valido cada entrada en la puerta.
+-- ADD COLUMN IF NOT EXISTS para que tambien se agreguen en bases que ya existian.
+ALTER TABLE detalle_compra ADD COLUMN IF NOT EXISTS usado_en  TIMESTAMP;
+ALTER TABLE detalle_compra ADD COLUMN IF NOT EXISTS usado_por BIGINT;            -- ref usuarios (personal de acceso)
