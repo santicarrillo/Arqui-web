@@ -21,9 +21,10 @@ public final class Dtos {
 
     // ---------- responses (lo que sale) ----------
     // >>> CONTRATO que consume ventas (GET /eventos/{id}). NO cambiar nombres. <<<
+    // F7: se agrega organizadorId al final (ventas lo usa para que cada organizador vea solo sus reportes)
     public record EventoInfoView(
             Long id, String estado, LocalDateTime fechaHora,
-            Integer limitePorCliente, List<SectorEventoView> sectores) {}
+            Integer limitePorCliente, List<SectorEventoView> sectores, Long organizadorId) {}
 
     public record SectorEventoView(Long sectorId, boolean numerado, BigDecimal precio) {}
 

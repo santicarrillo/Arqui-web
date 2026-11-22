@@ -62,6 +62,19 @@ public final class RestClients {
                 throw caido("eventos-service", e);
             }
         }
+
+        @Override
+        public Optional<Long> organizadorDe(long eventoId) {
+            try {
+                ClientDtos.EventoDueno evento = http.get().uri("/eventos/{id}", eventoId)
+                        .retrieve().body(ClientDtos.EventoDueno.class);
+                return Optional.ofNullable(evento).map(ClientDtos.EventoDueno::organizadorId);
+            } catch (HttpClientErrorException.NotFound e) {
+                return Optional.empty();
+            } catch (RestClientException e) {
+                throw caido("eventos-service", e);
+            }
+        }
     }
 
     @Component

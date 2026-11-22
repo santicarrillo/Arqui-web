@@ -166,7 +166,8 @@ public class EventoService {
         List<Dtos.SectorEventoView> sectores = e.sectores().stream()
                 .map(s -> new Dtos.SectorEventoView(s.sectorId(), s.numerado(), s.precio()))
                 .toList();
-        return new Dtos.EventoInfoView(e.id(), e.estado(), e.fechaHora(), e.limitePorCliente(), sectores);
+        return new Dtos.EventoInfoView(e.id(), e.estado(), e.fechaHora(), e.limitePorCliente(), sectores,
+                e.organizadorId());
     }
 
     private Evento obtenerOErr(long eventoId) {

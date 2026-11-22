@@ -15,6 +15,10 @@ public final class ClientDtos {
                              List<SectorEvento> sectores) {
     }
 
+    /** Solo los campos de GET /eventos/{id} que hacen falta para saber de quien es el evento. */
+    public record EventoDueno(Long id, Long organizadorId) {
+    }
+
     public record AsientoInfo(Long id) {
     }
 
