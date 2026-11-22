@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 
 import ventas.api.Dtos.CompraRequest;
 import ventas.api.Dtos.LugarRequest;
@@ -32,7 +33,9 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
+import ventas.service.CompraConfirmada;
 
 /** Pruebas unitarias de la logica de compra, sin base de datos: el repositorio y los clientes son simulados. */
 class CompraServiceTest {
@@ -43,6 +46,7 @@ class CompraServiceTest {
     private VentasRepository repo;
     private EventosClient eventos;
     private PagosClient pagos;
+    private ApplicationEventPublisher publicador;
     private CompraService service;
 
     @BeforeEach
@@ -50,7 +54,8 @@ class CompraServiceTest {
         repo = mock(VentasRepository.class);
         eventos = mock(EventosClient.class);
         pagos = mock(PagosClient.class);
-        service = new CompraService(repo, eventos, pagos, RELOJ, 10, 6);
+        publicador = mock(ApplicationEventPublisher.class);
+        service = new CompraService(repo, eventos, pagos, publicador, RELOJ, 10, 6);
     }
 
     private EventoInfo evento(String estado, Integer limite) {
@@ -189,6 +194,19 @@ class CompraServiceTest {
     }
 
     @Test
+    void unPagoAprobadoAvisaQueLaCompraSeConfirmo() {
+        when(repo.porIdBloqueando(1L)).thenReturn(Optional.of(compraPendiente(AHORA.plusMinutes(5))));
+        when(pagos.obtenerPorCompra(1L)).thenReturn(Optional.empty());
+        when(pagos.cobrar(any())).thenReturn(new PagoInfo(3L, 1L, "APROBADO"));
+        when(repo.detalles(1L)).thenReturn(List.of());
+        when(repo.porId(1L)).thenReturn(Optional.of(compraPendiente(AHORA.plusMinutes(5))));
+
+        service.pagar(55L, 1L, "TARJETA");
+
+        verify(publicador).publishEvent(eq(new CompraConfirmada(1L, 55L, 7L, new BigDecimal("30000"), 0)));
+    }
+
+    @Test
     void unPagoRechazadoLiberaLosLugaresYMarcaLaCompraRechazada() {
         when(repo.porIdBloqueando(1L)).thenReturn(Optional.of(compraPendiente(AHORA.plusMinutes(5))));
         when(pagos.obtenerPorCompra(1L)).thenReturn(Optional.empty());
@@ -202,5 +220,6 @@ class CompraServiceTest {
         assertEquals(Resultado.RECHAZADA, resultado.resultado());
         verify(repo).liberarAsientos(1L);
         verify(repo, never()).venderAsientos(anyLong());
+        verify(publicador, never()).publishEvent(any(Object.class));
     }
 }

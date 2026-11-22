@@ -162,3 +162,61 @@ varias instancias se usaría una cache compartida (por ejemplo Redis) o invalida
 **Cómo verlo andando:** `GET http://localhost:8082/actuator/caches` lista las caches y
 `/actuator/metrics/cache.gets?tag=name:eventoDetalle&tag=result:hit` cuenta los aciertos. El test
 `el_detalle_se_lee_de_la_cache_la_segunda_vez` verifica que la segunda lectura no va a MongoDB.
+
+## F9 · Preferencias y recomendaciones (ms-preferencias)
+
+**Servicio nuevo:** `ms-preferencias`, puerto **8086**, MongoDB. Usa el mismo servidor Mongo que eventos
+(`eventos-db` del docker-compose) con su propia base, `preferencias`: cada servicio sigue siendo dueño de sus
+datos, solo comparten el proceso de base. En el gateway: `/preferencias/**` y `/recomendaciones/**`.
+
+**Por qué MongoDB:** el perfil es un documento por cliente con listas adentro (tipos, artistas, eventos
+comprados) que crecen y cambian de forma; en relacional serían cuatro tablas con joins. Las dos consultas
+que importan (quién tiene a tal artista de favorito, y qué compraron los clientes parecidos) se resuelven con
+un índice multikey y una agregación.
+
+**Documento** (colección `perfiles`, `_id` = id del cliente):
+```json
+{ "_id": 5, "tiposEvento": ["RECITAL"], "artistasFavoritos": ["León Gieco"], "artistasClave": ["leon gieco"],
+  "ciudad": "Tandil", "eventosComprados": [1, 7], "actualizadoEn": "..." }
+```
+- Lo que declara el cliente se escribe con `$set` (PUT /preferencias) y las compras con `$addToSet` (las
+  avisa ventas). Son actualizaciones parciales del mismo documento: una compra que llega mientras el cliente
+  edita sus preferencias no se pierde, y repetir el aviso de una compra no la duplica.
+- `artistasClave` es el nombre normalizado (minúsculas, sin tildes): "León Gieco" y "leon gieco" son el mismo.
+
+**Endpoints**
+
+| Método | Ruta | Quién | Qué hace |
+|---|---|---|---|
+| GET | `/preferencias` | CLIENTE | Su perfil (vacío si nunca cargó nada) |
+| PUT | `/preferencias` | CLIENTE | Reemplaza tipos, artistas (hasta 10 c/u) y ciudad; no toca las compras |
+| GET | `/recomendaciones?limite=10` | CLIENTE | Eventos recomendados con puntaje y motivos |
+| POST | `/interno/compras` | ventas | Registra una compra confirmada (idempotente) |
+| GET | `/interno/interesados?artistas=...` | notificaciones (F8) | Clientes con esos artistas de favoritos |
+
+**Algoritmo:** cada evento publicado desde hoy que el cliente no compró suma puntos y se explica con motivos:
+
+| Motivo | Puntos |
+|---|---|
+| `ARTISTA_FAVORITO` | +3 (eventos busca el artista entre los participantes) |
+| `TIPO_PREFERIDO` | +2 |
+| `TU_CIUDAD` | +1 |
+| `LO_COMPRARON_CLIENTES_PARECIDOS` | +2 por cada cliente que compró alguno de sus eventos y también este (hasta 3) |
+| `POPULAR` | +1 por comprador (hasta 3), solo para un cliente sin ningún dato |
+
+La parte colaborativa es una agregación en MongoDB (`$match` → `$unwind` → `$match` → `$group` → `$sort`),
+en `PerfilRepository.compradosPorClientesParecidos`. El catálogo se pide a `GET /eventos`, que en eventos está
+cacheado (F5).
+
+**Cómo se entera de las compras:** `CompraService.confirmar` publica un evento de Spring, `CompraConfirmada`.
+`PreferenciasListener` lo atiende con `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`:
+- solo se avisa si el pago quedó guardado (después del commit);
+- corre en otro hilo: el cliente no espera a preferencias, y si preferencias está caído el pago no falla;
+- se reintenta 3 veces (Resilience4j, instancia `avisos`); si igual falla queda en el log.
+
+**Límite conocido:** si ventas se cae entre el commit y el aviso, esa compra no llega a preferencias. Para no
+perder ninguna se usaría un *outbox* (guardar el aviso en la misma transacción y mandarlo con un job) o un
+broker de mensajes. Para recomendaciones alcanza: perder un aviso solo las hace un poco menos precisas.
+
+**Tests:** `PreferenciasIntegrationTest` (12, MongoDB en Testcontainers) y, en ventas,
+`unPagoAprobadoAvisaQueLaCompraSeConfirmo` y los avisos en `FlujoCompraTest`.

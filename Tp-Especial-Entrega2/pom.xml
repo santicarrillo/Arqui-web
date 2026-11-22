@@ -15,5 +15,6 @@
         <module>api-gateway</module>
         <module>ms-usuarios</module>
         <module>ms-pagos</module>
+        <module>ms-preferencias</module>
     </modules>
 </project>

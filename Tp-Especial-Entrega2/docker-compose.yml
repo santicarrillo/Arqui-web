@@ -19,6 +19,7 @@ services:
       - "5437:5432"
 
   # eventos usa MongoDB (base documental) con usuario y contrasena: ver documentacion/05-mongodb-eventos.md
+  # Entrega 2: preferencias (F9) usa este mismo servidor con su propia base "preferencias".
   eventos-db:
     image: mongo:7.0.11
     container_name: eventos-db
