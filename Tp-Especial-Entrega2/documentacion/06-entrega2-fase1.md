@@ -133,3 +133,32 @@ ocupación y recaudación.
 **Quién puede verlo:** un `ORGANIZADOR` solo los de sus eventos (403 `NO_ES_TU_EVENTO`); un `ADMINISTRADOR`,
 todos. El dueño del evento lo informa eventos: `GET /eventos/{id}` suma el campo `organizadorId` (agregar un
 campo no rompe a quien no lo usa).
+
+## F5 · Cache
+
+**Dónde:** en ms-eventos, en memoria, con **Caffeine** y las anotaciones de Spring Cache (`CacheConfig`,
+`EventoService`).
+
+| Cache | Qué guarda | Tiempo de vida | Por qué |
+|---|---|---|---|
+| `eventoDetalle` | `GET /eventos/{id}` | 30 s | Ventas lo consulta en **cada** compra; en una venta masiva es la lectura más repetida del sistema |
+| `eventoBusquedas` | `GET /eventos` con sus filtros (la clave son todos los filtros juntos) | 60 s | El catálogo lo consultan todos los clientes, y también preferencias para recomendar |
+
+**Invalidación:** además del tiempo de vida, cada operación que cambia un evento (cargar precios, sumar
+participantes, publicar, cancelar) borra su detalle y todas las búsquedas (`@CacheEvict`). Así, en una sola
+instancia, un cambio se ve enseguida. Crear un evento no borra nada, porque un borrador no aparece en las
+búsquedas.
+
+**Qué NO se cachea y por qué:**
+- **La disponibilidad de lugares** (en ventas): cambia con cada compra. Una cache mostraría asientos libres
+  que ya se vendieron, y el cliente se enteraría recién al intentar comprarlos. Además ya es barata (una
+  consulta indexada por evento y sector) y la garantía de no doble venta depende de leer el dato real.
+- **Compras, entradas y pagos:** son datos de cada usuario, se leen poco y tienen que ser exactos.
+
+**Límite conocido:** es una cache local de cada instancia. Con varias instancias de eventos, una podría
+servir un evento recién cancelado como publicado hasta 30 s (el tiempo de vida acota el desfasaje). Para
+varias instancias se usaría una cache compartida (por ejemplo Redis) o invalidación por mensajes.
+
+**Cómo verlo andando:** `GET http://localhost:8082/actuator/caches` lista las caches y
+`/actuator/metrics/cache.gets?tag=name:eventoDetalle&tag=result:hit` cuenta los aciertos. El test
+`el_detalle_se_lee_de_la_cache_la_segunda_vez` verifica que la segunda lectura no va a MongoDB.

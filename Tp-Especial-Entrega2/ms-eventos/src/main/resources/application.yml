@@ -24,3 +24,13 @@ servicios:
 eventos:
   # cada cuanto se reintentan los avisos de cancelacion que ventas no pudo recibir
   reintento-cancelaciones-ms: 60000
+  # F5: cuanto vive cada entrada de la cache (ademas se borra en cada cambio del evento)
+  cache:
+    detalle-segundos: 30
+    busqueda-segundos: 60
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,caches,metrics

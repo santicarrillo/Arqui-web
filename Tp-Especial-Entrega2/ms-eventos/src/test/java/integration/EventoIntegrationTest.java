@@ -6,10 +6,12 @@ import eventos.client.LugaresClient;
 import eventos.client.LugaresClient.SectorLugar;
 import eventos.client.VentasClient;
 import eventos.client.VentasClient.SectorDisponibilidad;
+import eventos.repository.EventoRepository;
 import eventos.service.EventoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -74,6 +77,10 @@ class EventoIntegrationTest {
 
     @MockBean
     VentasClient ventas;
+
+    /** El repositorio real, espiado para contar cuantas veces se lee la base (F5). */
+    @SpyBean
+    EventoRepository repo;
 
     /** El lugar 1 tiene dos zonas y dos sectores numerados. */
     @BeforeEach
@@ -276,5 +283,46 @@ class EventoIntegrationTest {
         // ya no queda pendiente
         eventos.reintentarCancelacionesPendientes();
         verify(ventas, times(2)).avisarCancelacion(id);
+    }
+
+    // ---------------------------------------------------------------- F5: cache
+
+    @Test
+    void el_detalle_se_lee_de_la_cache_la_segunda_vez() throws Exception {
+        long id = crearEvento("TEATRO", "Tandil");
+        clearInvocations(repo);
+
+        mvc.perform(get("/eventos/" + id)).andExpect(status().isOk());
+        mvc.perform(get("/eventos/" + id)).andExpect(status().isOk());
+
+        verify(repo, times(1)).buscarPorId(id);
+    }
+
+    @Test
+    void cambiar_el_evento_borra_su_detalle_de_la_cache() throws Exception {
+        long id = crearEvento("TEATRO", "Tandil");
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.sectores.length()").value(0));
+
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.sectores.length()").value(1));
+
+        publicar(id);
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.estado").value("PUBLICADO"));
+    }
+
+    @Test
+    void publicar_hace_aparecer_el_evento_en_una_busqueda_que_estaba_en_cache() throws Exception {
+        mvc.perform(get("/eventos").param("tipo", "FESTIVAL")).andExpect(jsonPath("$.length()").value(0));
+
+        long id = crearEvento("FESTIVAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":1,"numerado":false,"precio":8000}]
+                """);
+        publicar(id);
+
+        mvc.perform(get("/eventos").param("tipo", "FESTIVAL"))
+                .andExpect(jsonPath("$[?(@.id == " + id + ")]").exists());
     }
 }
