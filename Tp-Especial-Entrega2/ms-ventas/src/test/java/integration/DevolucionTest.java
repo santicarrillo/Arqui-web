@@ -6,13 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,6 +197,8 @@ class DevolucionTest extends IntegracionBase {
         assertEquals("LIBRE", estadoAsiento(101L));
         assertEquals("LIBRE", estadoAsiento(102L));
         verify(pagos, times(2)).reintegrar(eq(PAGO_ID), any());
+        // F8: se avisa a los dos clientes a los que se les devolvio una entrada (el de la compra sin pagar no)
+        verify(notificaciones, timeout(2000)).eventoCancelado(EVENTO, List.of(10L, 20L));
     }
 
     @Test
@@ -206,5 +211,7 @@ class DevolucionTest extends IntegracionBase {
         assertEquals(0, segunda.entradasDevueltas());
         assertEquals(1, contar("devolucion"));
         verify(pagos, times(1)).reintegrar(eq(PAGO_ID), any());
+        // F8: la segunda vez no hay entradas nuevas devueltas, asi que no se vuelve a avisar
+        verify(notificaciones, after(500).times(1)).eventoCancelado(eq(EVENTO), any());
     }
 }

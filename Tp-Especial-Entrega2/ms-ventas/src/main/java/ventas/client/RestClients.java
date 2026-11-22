@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -119,6 +120,37 @@ public final class RestClients {
                         .retrieve().toBodilessEntity();
             } catch (RestClientException e) {
                 throw caido("preferencias-service", e);
+            }
+        }
+    }
+
+    /** F8: le manda avisos a notificaciones-service, que responde 202 y arma las notificaciones aparte. */
+    @Component
+    public static class NotificacionesRestClient implements NotificacionesClient {
+
+        private final RestClient http;
+
+        public NotificacionesRestClient(RestClient.Builder builder,
+                                        @Value("${servicios.notificaciones.url}") String url) {
+            this.http = builder.baseUrl(url).requestFactory(conTimeouts(2000)).build();
+        }
+
+        @Override
+        public void compraConfirmada(long compraId, long clienteId, long eventoId, int entradas, BigDecimal total) {
+            avisar("/interno/avisos/compra-confirmada", Map.of("compraId", compraId, "clienteId", clienteId,
+                    "eventoId", eventoId, "entradas", entradas, "total", total));
+        }
+
+        @Override
+        public void eventoCancelado(long eventoId, List<Long> clientes) {
+            avisar("/interno/avisos/evento-cancelado", Map.of("eventoId", eventoId, "clientes", clientes));
+        }
+
+        private void avisar(String ruta, Map<String, Object> aviso) {
+            try {
+                http.post().uri(ruta).body(aviso).retrieve().toBodilessEntity();
+            } catch (RestClientException e) {
+                throw caido("notificaciones-service", e);
             }
         }
     }

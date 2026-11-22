@@ -26,6 +26,9 @@ servicios:
   # F9: se le avisa cada compra confirmada, para el historial y las recomendaciones
   preferencias:
     url: ${PREFERENCIAS_URL:http://localhost:8086}
+  # F8: avisos al cliente (compra confirmada, evento cancelado)
+  notificaciones:
+    url: ${NOTIFICACIONES_URL:http://localhost:8087}
 
 ventas:
   reserva-minutos: 10

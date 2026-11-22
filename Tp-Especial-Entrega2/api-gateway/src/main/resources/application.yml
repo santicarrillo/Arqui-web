@@ -37,6 +37,12 @@ spring:
           predicates:
             - Path=/preferencias/**, /recomendaciones/**
 
+        # 6. Rutas a notificaciones-service (puerto 8087). /interno/** no se expone.
+        - id: notificaciones-service
+          uri: ${NOTIFICACIONES_URL:http://localhost:8087}
+          predicates:
+            - Path=/notificaciones/**
+
 # Entrega 2: MISMA clave que ms-usuarios. El gateway valida la firma del JWT.
 jwt:
   secret: ${JWT_SECRET:clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes}

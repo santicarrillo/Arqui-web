@@ -220,3 +220,52 @@ broker de mensajes. Para recomendaciones alcanza: perder un aviso solo las hace 
 
 **Tests:** `PreferenciasIntegrationTest` (12, MongoDB en Testcontainers) y, en ventas,
 `unPagoAprobadoAvisaQueLaCompraSeConfirmo` y los avisos en `FlujoCompraTest`.
+
+## F8 · Notificaciones (ms-notificaciones)
+
+**Servicio nuevo:** `ms-notificaciones`, puerto **8087**, MongoDB (base `notificaciones` en el mismo servidor).
+En el gateway: `/notificaciones/**`.
+
+**Qué se notifica**
+
+| Aviso | Lo manda | A quién le llega |
+|---|---|---|
+| `COMPRA_CONFIRMADA` | ventas, al pagarse una compra | al comprador |
+| `EVENTO_CANCELADO` | ventas, al terminar las devoluciones de un evento cancelado | a cada cliente al que se le devolvió alguna entrada |
+| `EVENTO_PUBLICADO` | eventos, al publicar un evento con artistas | a los clientes que tienen a alguno de esos artistas de favorito (se le pregunta a preferencias, F9) |
+
+**Asincrónico de punta a punta:**
+1. ventas y eventos publican un evento de Spring (`CompraConfirmada`, `EventoCancelado`, `EventoPublicado`) y un
+   listener `@Async` hace la llamada HTTP. La operación principal (pagar, cancelar, publicar) no espera y no
+   falla si notificaciones está caído. En ventas, además, el aviso sale recién después del commit.
+2. notificaciones valida el aviso y responde **202 Accepted** enseguida; arma las notificaciones en segundo plano
+   (`ProcesadorDeAvisos`, `@Async`).
+3. Por cada destinatario guarda un documento y "manda" el email (simulado: se escribe en el log, `[EMAIL] ...`).
+
+**Reintentos sin duplicados:** quien avisa reintenta (ventas con Resilience4j `avisos`, eventos con 3 intentos).
+Para que un reintento no genere dos notificaciones, el `_id` de cada una se arma con lo que se notifica y a quién
+(`compra-15-cliente-5`, `publicado-7-cliente-8`): el segundo insert choca con el `_id` existente, se descarta, y
+tampoco se manda un segundo email.
+
+**Endpoints**
+
+| Método | Ruta | Quién |
+|---|---|---|
+| POST | `/interno/avisos/compra-confirmada` · `/evento-cancelado` · `/evento-publicado` | ventas, eventos (202) |
+| GET | `/notificaciones?soloNoLeidas=false` | el usuario logueado: las suyas, de la más nueva a la más vieja |
+| PUT | `/notificaciones/{id}/leida` | el usuario logueado (404 si es de otro) |
+
+**Documento:**
+```json
+{ "_id": "compra-15-cliente-5", "clienteId": 5, "tipo": "COMPRA_CONFIRMADA", "eventoId": 7,
+  "titulo": "Tu compra esta confirmada", "mensaje": "Compraste 2 entrada(s)...", "canal": "EMAIL",
+  "creadaEn": "...", "leida": false }
+```
+Índice `(clienteId, creadaEn desc)` para la bandeja de cada usuario.
+
+**Límites conocidos:** igual que en F9, si el proceso que avisa se cae entre la operación y el aviso, ese aviso se
+pierde (se resolvería con un outbox o un broker de mensajes). El email es simulado; en producción se buscaría el
+email en usuarios-service.
+
+**Tests:** `NotificacionesIntegrationTest` (7), y en los productores: `FlujoCompraTest` y `DevolucionTest` en
+ventas, `publicar_un_evento_con_artistas_avisa_a_notificaciones` y `EventoServiceTest` en eventos.

@@ -5,6 +5,7 @@ import ventas.api.Dtos;
 import ventas.client.ClientDtos;
 import ventas.client.EventosClient;
 import ventas.client.LugaresClient;
+import ventas.client.NotificacionesClient;
 import ventas.client.PagosClient;
 import ventas.client.PreferenciasClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +61,8 @@ abstract class IntegracionBase {
     protected PagosClient pagos;
     @MockBean
     protected PreferenciasClient preferencias;
+    @MockBean
+    protected NotificacionesClient notificaciones;
 
     @Autowired
     protected JdbcClient jdbc;

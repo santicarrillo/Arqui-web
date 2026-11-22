@@ -3,6 +3,7 @@ package integration;
 import com.jayway.jsonpath.JsonPath;
 import eventos.Domains.ApiException;
 import eventos.client.LugaresClient;
+import eventos.client.NotificacionesClient;
 import eventos.client.LugaresClient.SectorLugar;
 import eventos.client.VentasClient;
 import eventos.client.VentasClient.SectorDisponibilidad;
@@ -27,10 +28,12 @@ import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,6 +80,9 @@ class EventoIntegrationTest {
 
     @MockBean
     VentasClient ventas;
+
+    @MockBean
+    NotificacionesClient notificaciones;
 
     /** El repositorio real, espiado para contar cuantas veces se lee la base (F5). */
     @SpyBean
@@ -324,5 +330,24 @@ class EventoIntegrationTest {
 
         mvc.perform(get("/eventos").param("tipo", "FESTIVAL"))
                 .andExpect(jsonPath("$[?(@.id == " + id + ")]").exists());
+    }
+
+    // ---------------------------------------------------------------- F8: aviso de publicacion
+
+    @Test
+    void publicar_un_evento_con_artistas_avisa_a_notificaciones() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        mvc.perform(post("/eventos/" + id + "/participantes").contentType("application/json").content("""
+                [{"nombre":"Divididos","tipo":"BANDA"}]
+                """)).andExpect(status().isOk());
+        cargarSectores(id, """
+                [{"sectorId":1,"numerado":false,"precio":8000}]
+                """);
+
+        publicar(id);
+
+        // corre en otro hilo: se espera hasta 2 segundos
+        verify(notificaciones, timeout(2000)).eventoPublicado(eq(id), eq("Evento"), eq("Tandil"), any(),
+                eq(List.of("Divididos")));
     }
 }
