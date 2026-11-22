@@ -20,6 +20,9 @@ servicios:
   # y le pide a ventas que prepare asientos y cupos; al cancelar, le avisa a ventas
   ventas:
     url: ${VENTAS_URL:http://localhost:8083}
+  # F8: al publicar, se avisa a notificaciones para los seguidores de los artistas
+  notificaciones:
+    url: ${NOTIFICACIONES_URL:http://localhost:8087}
 
 eventos:
   # cada cuanto se reintentan los avisos de cancelacion que ventas no pudo recibir

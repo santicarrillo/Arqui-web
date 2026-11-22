@@ -1,0 +1,17 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: notificaciones-service
+  data:
+    mongodb:
+      # Mismo servidor MongoDB que eventos (eventos-db del docker-compose), con su propia base "notificaciones".
+      # En Docker: NOTIFICACIONES_MONGO_URI.
+      uri: ${NOTIFICACIONES_MONGO_URI:mongodb://root:password@localhost:27017/notificaciones?authSource=admin}
+      auto-index-creation: true
+
+# para EVENTO_PUBLICADO se le pregunta a preferencias quienes siguen a esos artistas
+servicios:
+  preferencias:
+    url: ${PREFERENCIAS_URL:http://localhost:8086}

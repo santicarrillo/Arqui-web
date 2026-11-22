@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,16 +39,18 @@ public class DevolucionService {
     private final DevolucionRepository repo;
     private final CompraService compras;
     private final PagosClient pagos;
+    private final ApplicationEventPublisher publicador;
     private final TransactionTemplate tx;
     private final Clock clock;
     private final int horasLimite;
 
     public DevolucionService(DevolucionRepository repo, CompraService compras, PagosClient pagos,
-                             TransactionTemplate tx, Clock clock,
+                             ApplicationEventPublisher publicador, TransactionTemplate tx, Clock clock,
                              @Value("${ventas.devolucion-horas-limite:72}") int horasLimite) {
         this.repo = repo;
         this.compras = compras;
         this.pagos = pagos;
+        this.publicador = publicador;
         this.tx = tx;
         this.clock = clock;
         this.horasLimite = horasLimite;
@@ -125,6 +129,9 @@ public class DevolucionService {
      *
      * Cada entrada se procesa en su propia transaccion. Si pagos-service se cae a mitad de camino, lo hecho
      * queda hecho y eventos puede repetir la llamada: las entradas ya devueltas se saltean.
+     *
+     * F8: al final se avisa a cada cliente al que se le devolvio alguna entrada (EventoCancelado). Si se repite
+     * la llamada, las entradas ya devueltas no cuentan, asi que no se vuelve a avisar.
      */
     public CancelacionView cancelarEvento(long eventoId) {
         int pendientes = 0;
@@ -134,19 +141,25 @@ public class DevolucionService {
         }
 
         int devueltas = 0;
+        Set<Long> clientes = new TreeSet<>();
         for (Long entradaId : repo.entradasVigentesDeEvento(eventoId)) {
-            Boolean devuelta = tx.execute(estado -> devolverPorCancelacion(entradaId));
-            if (Boolean.TRUE.equals(devuelta)) {
+            Long clienteId = tx.execute(estado -> devolverPorCancelacion(entradaId));
+            if (clienteId != null) {
                 devueltas++;
+                clientes.add(clienteId);
             }
+        }
+        if (!clientes.isEmpty()) {
+            publicador.publishEvent(new EventoCancelado(eventoId, List.copyOf(clientes)));
         }
         return new CancelacionView(eventoId, pendientes, devueltas);
     }
 
-    private boolean devolverPorCancelacion(long entradaId) {
+    /** Devuelve el cliente de la entrada si la devolvio, o null si no habia nada que devolver. */
+    private Long devolverPorCancelacion(long entradaId) {
         Optional<EntradaDeCompra> leida = repo.entradaBloqueando(entradaId);
         if (leida.isEmpty() || !"VALIDA".equals(leida.get().estado())) {
-            return false; // ya la devolvio otro proceso mientras tanto
+            return null; // ya la devolvio otro proceso mientras tanto
         }
         EntradaDeCompra entrada = leida.get();
 
@@ -154,7 +167,7 @@ public class DevolucionService {
         Optional<Devolucion> activa = repo.activaDeEntrada(entradaId);
         if (activa.isPresent()) {
             if (!"PENDIENTE".equals(activa.get().estado())) {
-                return false; // ya estaba aprobada
+                return null; // ya estaba aprobada
             }
             devolucion = activa.get(); // la habia pedido el cliente: se aprueba sola
         } else {
@@ -162,7 +175,7 @@ public class DevolucionService {
             devolucion = repo.porId(id).orElseThrow();
         }
         aprobar(devolucion, entrada, null);
-        return true;
+        return entrada.clienteId();
     }
 
     // --------------------------------------------------------------- comun

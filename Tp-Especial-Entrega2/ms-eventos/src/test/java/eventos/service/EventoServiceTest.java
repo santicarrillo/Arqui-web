@@ -10,6 +10,7 @@ import eventos.client.VentasClient;
 import eventos.client.VentasClient.SectorDisponibilidad;
 import eventos.repository.EventoRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,7 +25,8 @@ class EventoServiceTest {
     private final EventoRepository repo = mock(EventoRepository.class);
     private final LugaresClient lugares = mock(LugaresClient.class);
     private final VentasClient ventas = mock(VentasClient.class);
-    private final EventoService service = new EventoService(repo, lugares, ventas);
+    private final ApplicationEventPublisher publicador = mock(ApplicationEventPublisher.class);
+    private final EventoService service = new EventoService(repo, lugares, ventas, publicador);
 
     private static final EventoSector SECTOR_12 = new EventoSector(12L, true, new BigDecimal("30000"));
     private static final EventoSector ZONA_13 = new EventoSector(13L, false, new BigDecimal("15000"));
@@ -66,6 +68,9 @@ class EventoServiceTest {
                 new SectorDisponibilidad(12L, true, null),
                 new SectorDisponibilidad(13L, false, 1000)));
         verify(repo).publicar(1L);
+        // F8: se avisa que se publico (con los nombres de los participantes, aca ninguno)
+        verify(publicador).publishEvent(new EventoPublicado(1L, "Recital", "Tandil",
+                LocalDateTime.of(2026, 12, 1, 21, 0), List.of()));
     }
 
     @Test
@@ -79,6 +84,7 @@ class EventoServiceTest {
 
         assertEquals(503, ex.status().value());
         verify(repo, never()).publicar(anyLong());
+        verify(publicador, never()).publishEvent(any(Object.class));
     }
 
     @Test

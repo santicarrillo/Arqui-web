@@ -2,12 +2,14 @@ package eventos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync   // F8: el aviso de publicacion a notificaciones no hace esperar al organizador
 public class EventosApplication {
     public static void main(String[] args) {
         // Zona horaria fija: MongoDB guarda las fechas en UTC y Spring convierte LocalDateTime

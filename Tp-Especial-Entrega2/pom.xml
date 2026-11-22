@@ -16,5 +16,6 @@
         <module>ms-usuarios</module>
         <module>ms-pagos</module>
         <module>ms-preferencias</module>
+        <module>ms-notificaciones</module>
     </modules>
 </project>

@@ -8,6 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +81,34 @@ public final class RestClients {
             } catch (RestClientException e) {
                 throw ApiException.unavailable("VENTAS_NO_DISPONIBLE",
                         "No se pudo avisar la cancelacion a ventas-service: " + e.getMessage());
+            }
+        }
+    }
+
+    /** F8: aviso de publicacion a notificaciones-service (responde 202 y procesa aparte). */
+    @Component
+    public static class NotificacionesRestClient implements NotificacionesClient {
+
+        private record AvisoPublicacion(long eventoId, String nombre, String ciudad, LocalDateTime fechaHora,
+                                        List<String> artistas) {}
+
+        private final RestClient http;
+
+        public NotificacionesRestClient(RestClient.Builder builder,
+                                        @Value("${servicios.notificaciones.url}") String url) {
+            this.http = builder.baseUrl(url).requestFactory(conTimeouts()).build();
+        }
+
+        @Override
+        public void eventoPublicado(long eventoId, String nombre, String ciudad, LocalDateTime fechaHora,
+                                    List<String> artistas) {
+            try {
+                http.post().uri("/interno/avisos/evento-publicado")
+                        .body(new AvisoPublicacion(eventoId, nombre, ciudad, fechaHora, artistas))
+                        .retrieve().toBodilessEntity();
+            } catch (RestClientException e) {
+                throw ApiException.unavailable("NOTIFICACIONES_NO_DISPONIBLE",
+                        "No se pudo avisar a notificaciones-service: " + e.getMessage());
             }
         }
     }

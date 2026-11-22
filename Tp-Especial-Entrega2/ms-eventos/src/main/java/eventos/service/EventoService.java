@@ -13,6 +13,7 @@ import eventos.repository.EventoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
@@ -42,11 +43,14 @@ public class EventoService {
     private final EventoRepository repo;
     private final LugaresClient lugares;
     private final VentasClient ventas;
+    private final ApplicationEventPublisher publicador;
 
-    public EventoService(EventoRepository repo, LugaresClient lugares, VentasClient ventas) {
+    public EventoService(EventoRepository repo, LugaresClient lugares, VentasClient ventas,
+                         ApplicationEventPublisher publicador) {
         this.repo = repo;
         this.lugares = lugares;
         this.ventas = ventas;
+        this.publicador = publicador;
     }
 
     public long crear(Dtos.CrearEventoRequest r) {
@@ -126,6 +130,10 @@ public class EventoService {
 
         if (!repo.publicar(eventoId))
             throw ApiException.conflict("ESTADO_INVALIDO", "El evento ya no esta en BORRADOR");
+
+        // F8: aviso a los seguidores de sus artistas (AvisosListener, en otro hilo)
+        publicador.publishEvent(new EventoPublicado(eventoId, e.nombre(), e.ciudad(), e.fechaHora(),
+                e.participantes().stream().map(Participante::nombre).toList()));
     }
 
     /**
