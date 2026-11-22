@@ -28,3 +28,34 @@ ventas:
   reserva-minutos: 10
   limite-por-cliente: 6
   vencimiento-cada-ms: 30000
+# F11: resiliencia en las llamadas a pagos-service. Los reintentos son seguros porque pagos es idempotente:
+# un segundo POST /pagos con la misma compra devuelve el pago que ya existe.
+resilience4j:
+  retry:
+    instances:
+      pagos:
+        max-attempts: 3
+        wait-duration: 300ms
+        retry-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+  circuitbreaker:
+    instances:
+      pagos:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,circuitbreakers,retries
+  health:
+    circuitbreakers:
+      enabled: true
