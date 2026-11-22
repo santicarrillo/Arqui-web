@@ -27,6 +27,9 @@ public final class Dtos {
 
     public record SectorEventoView(Long sectorId, boolean numerado, BigDecimal precio) {}
 
+    // respuesta de la cancelacion: devoluciones PROCESADAS por ventas, o PENDIENTES (se reintenta solo)
+    public record CancelacionView(Long eventoId, String estado, String devoluciones) {}
+
     // listado que devuelve la busqueda
     public record EventoResumenView(
             Long id, String nombre, String tipo, LocalDateTime fechaHora, String ciudad, String estado) {}

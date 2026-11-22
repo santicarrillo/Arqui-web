@@ -13,7 +13,14 @@ spring:
       # Crea los indices declarados en Evento (@Indexed, @CompoundIndex) al arrancar
       auto-index-creation: true
 
-# lugares nos dice si un sector es numerado; lo copiamos al cargar precios
+# F12: al publicar, eventos le pide a lugares la capacidad de cada sector y si es numerado
 servicios:
   lugares:
     url: ${LUGARES_URL:http://localhost:8084}
+  # y le pide a ventas que prepare asientos y cupos; al cancelar, le avisa a ventas
+  ventas:
+    url: ${VENTAS_URL:http://localhost:8083}
+
+eventos:
+  # cada cuanto se reintentan los avisos de cancelacion que ventas no pudo recibir
+  reintento-cancelaciones-ms: 60000

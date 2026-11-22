@@ -1,7 +1,15 @@
 package integration;
 
 import com.jayway.jsonpath.JsonPath;
+import eventos.Domains.ApiException;
+import eventos.client.LugaresClient;
+import eventos.client.LugaresClient.SectorLugar;
+import eventos.client.VentasClient;
+import eventos.client.VentasClient.SectorDisponibilidad;
+import eventos.service.EventoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,8 +20,17 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
 import java.util.TimeZone;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -24,8 +41,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * En maquinas sin Docker se SALTEA (disabledWithoutDocker = true).
  * Con Docker Engine 29+ hace falta un archivo ~/.docker-java.properties con api.version=1.44,
  * porque el engine ya no acepta versiones viejas de la API.
+ *
+ * lugares-service y ventas-service se simulan (@MockBean): aca se prueba eventos.
  */
-@SpringBootTest(classes = eventos.EventosApplication.class)
+@SpringBootTest(classes = eventos.EventosApplication.class,
+        properties = "eventos.reintento-cancelaciones-ms=3600000")
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
 class EventoIntegrationTest {
@@ -45,6 +65,25 @@ class EventoIntegrationTest {
 
     @Autowired
     MockMvc mvc;
+
+    @Autowired
+    EventoService eventos;
+
+    @MockBean
+    LugaresClient lugares;
+
+    @MockBean
+    VentasClient ventas;
+
+    /** El lugar 1 tiene dos zonas y dos sectores numerados. */
+    @BeforeEach
+    void lugarConSectores() {
+        when(lugares.sectores(1L)).thenReturn(List.of(
+                new SectorLugar(1L, false, 500),
+                new SectorLugar(2L, true, 100),
+                new SectorLugar(12L, true, 50),
+                new SectorLugar(13L, false, 1000)));
+    }
 
     private long crearEvento(String tipo, String ciudad) throws Exception {
         String body = mvc.perform(post("/eventos").contentType("application/json").content("""
@@ -154,5 +193,88 @@ class EventoIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(barato))
                 .andExpect(jsonPath("$[1].id").value(caro));
+    }
+
+    // ---------------------------------------------------------------- F12: sagas con ventas
+
+    @Test
+    void publicar_prepara_la_disponibilidad_en_ventas_con_la_capacidad_de_las_zonas() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":12,"numerado":true,"precio":30000},
+                 {"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+        publicar(id);
+
+        verify(ventas).prepararDisponibilidad(id, List.of(
+                new SectorDisponibilidad(12L, true, null),
+                new SectorDisponibilidad(13L, false, 1000)));
+    }
+
+    @Test
+    void si_ventas_no_responde_el_evento_sigue_en_borrador() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+        doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido"))
+                .when(ventas).prepararDisponibilidad(anyLong(), anyList());
+
+        mvc.perform(put("/eventos/" + id + "/publicacion")).andExpect(status().isServiceUnavailable());
+
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.estado").value("BORRADOR"));
+    }
+
+    @Test
+    void un_sector_que_no_es_del_lugar_no_deja_publicar() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":77,"numerado":false,"precio":15000}]
+                """);
+
+        mvc.perform(put("/eventos/" + id + "/publicacion"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("SECTOR_FUERA_DEL_LUGAR"));
+    }
+
+    @Test
+    void cancelar_avisa_a_ventas_para_que_procese_las_devoluciones() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+        publicar(id);
+
+        mvc.perform(put("/eventos/" + id + "/cancelacion").contentType("application/json")
+                        .content("{\"motivo\":\"lluvia\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("CANCELADO"))
+                .andExpect(jsonPath("$.devoluciones").value("PROCESADAS"));
+
+        verify(ventas).avisarCancelacion(id);
+    }
+
+    @Test
+    void si_ventas_esta_caido_la_cancelacion_se_reintenta_despues() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+        publicar(id);
+        // la primera vez ventas no responde, la segunda si
+        doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido")).doNothing()
+                .when(ventas).avisarCancelacion(eq(id));
+
+        mvc.perform(put("/eventos/" + id + "/cancelacion").contentType("application/json")
+                        .content("{\"motivo\":\"lluvia\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.devoluciones").value("PENDIENTES"));
+
+        // lo que hace la tarea programada
+        assertTrue(eventos.reintentarCancelacionesPendientes() >= 1);
+        verify(ventas, times(2)).avisarCancelacion(id);
+        // ya no queda pendiente
+        eventos.reintentarCancelacionesPendientes();
+        verify(ventas, times(2)).avisarCancelacion(id);
     }
 }

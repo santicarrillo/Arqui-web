@@ -31,7 +31,9 @@ public record Evento(
         Integer limitePorCliente,
         String motivoCancelacion,
         List<EventoSector> sectores,
-        List<Participante> participantes
+        List<Participante> participantes,
+        // F12: false mientras ventas no confirmo que proceso la cancelacion (devoluciones); se reintenta
+        Boolean cancelacionNotificada
 ) {
     public Evento {
         // un documento sin estos arreglos se lee como listas vacias, nunca null
