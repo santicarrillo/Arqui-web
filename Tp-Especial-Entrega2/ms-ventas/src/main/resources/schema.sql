@@ -76,3 +76,30 @@ CREATE TABLE IF NOT EXISTS cupo_sector (
 -- ADD COLUMN IF NOT EXISTS para que tambien se agreguen en bases que ya existian.
 ALTER TABLE detalle_compra ADD COLUMN IF NOT EXISTS usado_en  TIMESTAMP;
 ALTER TABLE detalle_compra ADD COLUMN IF NOT EXISTS usado_por BIGINT;            -- ref usuarios (personal de acceso)
+
+-- Entrega 2 (F10): fila virtual simplificada para eventos de alta demanda.
+-- El organizador la activa para un evento; desde ese momento solo compran los clientes con turno habilitado.
+CREATE TABLE IF NOT EXISTS fila_virtual (
+    evento_id       BIGINT    PRIMARY KEY,                           -- ref eventos
+    activa          BOOLEAN   NOT NULL,
+    simultaneos     INTEGER   NOT NULL CHECK (simultaneos > 0),      -- cuantos clientes pueden estar comprando a la vez
+    minutos_turno   INTEGER   NOT NULL CHECK (minutos_turno > 0),    -- cuanto tiempo tiene cada uno para comprar
+    ultimo_numero   BIGINT    NOT NULL DEFAULT 0,                    -- el ultimo numero de turno entregado
+    actualizada_en  TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS turno_fila (
+    evento_id      BIGINT      NOT NULL REFERENCES fila_virtual (evento_id),
+    cliente_id     BIGINT      NOT NULL,                             -- ref usuarios
+    numero         BIGINT      NOT NULL,
+    estado         VARCHAR(12) NOT NULL
+        CHECK (estado IN ('ESPERANDO', 'HABILITADO', 'USADO', 'VENCIDO')),
+    pedido_en      TIMESTAMP   NOT NULL,
+    habilitado_en  TIMESTAMP,
+    vence_en       TIMESTAMP,
+    PRIMARY KEY (evento_id, cliente_id),                             -- un turno por cliente y evento
+    UNIQUE (evento_id, numero),
+    CHECK ((estado = 'ESPERANDO') = (vence_en IS NULL))
+);
+
+CREATE INDEX IF NOT EXISTS turno_fila_espera_idx ON turno_fila (evento_id, estado, numero);

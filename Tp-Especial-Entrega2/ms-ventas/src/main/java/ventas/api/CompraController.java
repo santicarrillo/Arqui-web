@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ventas.service.CompraService;
+import ventas.service.FilaVirtualService;
 
 import java.util.Map;
 
@@ -13,18 +14,26 @@ import java.util.Map;
 @RequestMapping("/compras")
 public class CompraController {
     private final CompraService compras;
+    private final FilaVirtualService filas;
 
-    public CompraController(CompraService compras) {
+    public CompraController(CompraService compras, FilaVirtualService filas) {
         this.compras = compras;
+        this.filas = filas;
     }
 
     @Operation(summary = "Reserva los lugares y crea la compra PENDIENTE (vence a los 10 minutos). "
-            + "Repetir la misma Idempotency-Key devuelve la misma compra (200).")
+            + "Repetir la misma Idempotency-Key devuelve la misma compra (200). Si el evento tiene fila virtual "
+            + "activa, hace falta un turno habilitado (409 TURNO_REQUERIDO / TURNO_EN_ESPERA / TURNO_VENCIDO).")
     @PostMapping
     public ResponseEntity<Dtos.CompraView> crear(@RequestHeader("X-Usuario-Id") long usuarioId,
                                                  @RequestHeader("Idempotency-Key") String clave,
                                                  @Valid @RequestBody Dtos.CompraRequest pedido) {
+        // F10: con fila virtual activa, solo compra quien tiene el turno habilitado
+        filas.exigirTurno(usuarioId, pedido.eventoId());
         CompraService.CompraCreada creada = compras.crear(usuarioId, clave, pedido);
+        if (creada.nueva()) {
+            filas.marcarUsado(usuarioId, pedido.eventoId());
+        }
         return ResponseEntity.status(creada.nueva() ? HttpStatus.CREATED : HttpStatus.OK).body(creada.compra());
     }
 
