@@ -74,7 +74,7 @@ class DevolucionTest extends IntegracionBase {
         assertEquals("SOLICITUD_CLIENTE", pedida.motivo());
         assertEquals("VALIDA", estadoEntrada(entrada), "mientras esta pendiente la entrada sigue valida");
 
-        DevolucionView aprobada = devoluciones.resolver(ADMIN, "ADMIN", entrada, true);
+        DevolucionView aprobada = devoluciones.resolver(ADMIN, "ADMINISTRADOR", entrada, true);
 
         assertEquals("APROBADA", aprobada.estado());
         assertEquals(Long.valueOf(ADMIN), aprobada.adminId());
@@ -92,7 +92,7 @@ class DevolucionTest extends IntegracionBase {
         long entrada = comprarYPagar(CLIENTE, "d2", pedidoAsiento(ASIENTO));
         devoluciones.solicitar(CLIENTE, entrada);
 
-        DevolucionView rechazada = devoluciones.resolver(ADMIN, "ADMIN", entrada, false);
+        DevolucionView rechazada = devoluciones.resolver(ADMIN, "ADMINISTRADOR", entrada, false);
 
         assertEquals("RECHAZADA", rechazada.estado());
         assertEquals("VALIDA", estadoEntrada(entrada));
@@ -128,7 +128,7 @@ class DevolucionTest extends IntegracionBase {
     void despuesDeUnRechazoSePuedePedirDeNuevo() {
         long entrada = comprarYPagar(CLIENTE, "d5", pedidoAsiento(ASIENTO));
         devoluciones.solicitar(CLIENTE, entrada);
-        devoluciones.resolver(ADMIN, "ADMIN", entrada, false);
+        devoluciones.resolver(ADMIN, "ADMINISTRADOR", entrada, false);
 
         DevolucionView otra = devoluciones.solicitar(CLIENTE, entrada);
 
@@ -162,7 +162,7 @@ class DevolucionTest extends IntegracionBase {
         assertEquals(1, ocupadosZona());
 
         devoluciones.solicitar(CLIENTE, entrada);
-        devoluciones.resolver(ADMIN, "ADMIN", entrada, true);
+        devoluciones.resolver(ADMIN, "ADMINISTRADOR", entrada, true);
 
         assertEquals(0, ocupadosZona());
     }
