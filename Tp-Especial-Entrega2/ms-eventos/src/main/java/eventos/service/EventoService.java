@@ -12,6 +12,9 @@ import eventos.client.VentasClient.SectorDisponibilidad;
 import eventos.repository.EventoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +30,9 @@ import java.util.stream.Collectors;
  * (el evento con sus sectores y participantes adentro) y esa operacion es atomica por si sola.
  *
  * Publicar y cancelar son sagas con ventas-service (F12): ver documentacion/06-entrega2-fase1.md.
+ *
+ * Cache (F5): el detalle (lo que lee ventas en cada compra) y la busqueda se guardan en memoria
+ * (CacheConfig). Todo metodo que cambia un evento borra su detalle y todas las busquedas.
  */
 @Service
 public class EventoService {
@@ -52,6 +58,9 @@ public class EventoService {
         return repo.crear(r);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
+            @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
     public void configurarSectores(long eventoId, List<Dtos.SectorPrecioRequest> sectores) {
         Evento e = obtenerOErr(eventoId);
         if (!"BORRADOR".equals(e.estado()))
@@ -66,6 +75,9 @@ public class EventoService {
         }
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
+            @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
     public void agregarParticipantes(long eventoId, List<Dtos.ParticipanteRequest> participantes) {
         obtenerOErr(eventoId);
         if (participantes.isEmpty()) return;
@@ -85,6 +97,9 @@ public class EventoService {
      * (ventas no vende si el evento no esta PUBLICADO) y el reintento no la duplica, asi que no hace falta
      * compensar.
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
+            @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
     public void publicar(long eventoId) {
         Evento e = obtenerOErr(eventoId);
         if (!"BORRADOR".equals(e.estado()))
@@ -120,6 +135,9 @@ public class EventoService {
      * Si ventas no responde, la cancelacion queda pendiente y CancelacionesPendientesJob la reintenta
      * hasta que ventas la procese (consistencia eventual).
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
+            @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
     public Dtos.CancelacionView cancelar(long eventoId, String motivo) {
         Evento e = obtenerOErr(eventoId);
         if ("CANCELADO".equals(e.estado()) || !repo.cancelar(eventoId, motivo))
@@ -150,7 +168,8 @@ public class EventoService {
         return entregados;
     }
 
-    // busqueda por criterios -> lista resumida
+    // busqueda por criterios -> lista resumida. La clave de la cache son todos los filtros juntos.
+    @Cacheable(cacheNames = CacheConfig.BUSQUEDAS)
     public List<Dtos.EventoResumenView> buscar(String tipo, Long organizadorId, String participante,
                                                String ciudad, LocalDate desde, LocalDate hasta, String orden) {
         return repo.buscar(tipo, organizadorId, participante, ciudad, desde, hasta, orden).stream()
@@ -161,6 +180,7 @@ public class EventoService {
 
     // >>> Lo que consume ventas: arma el EventoInfoView para GET /eventos/{id} <<<
     // Los sectores vienen dentro del documento: una sola lectura a la base.
+    @Cacheable(cacheNames = CacheConfig.DETALLE, key = "#p0")
     public Dtos.EventoInfoView obtenerInfo(long eventoId) {
         Evento e = obtenerOErr(eventoId);
         List<Dtos.SectorEventoView> sectores = e.sectores().stream()
