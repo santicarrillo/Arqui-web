@@ -89,7 +89,7 @@ public final class RestClients {
     @Component
     public static class NotificacionesRestClient implements NotificacionesClient {
 
-        private record AvisoPublicacion(long eventoId, String nombre, String ciudad, LocalDateTime fechaHora,
+        public record AvisoPublicacion(long eventoId, String nombre, String ciudad, LocalDateTime fechaHora,
                                         List<String> artistas) {}
 
         private final RestClient http;

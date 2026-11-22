@@ -32,7 +32,8 @@ import static org.mockito.Mockito.when;
  * servicios externos simulados. El contenedor es unico para todas las clases, asi el contexto de Spring
  * se puede reutilizar.
  */
-@SpringBootTest(classes = VentasApplication.class, properties = "ventas.vencimiento-cada-ms=3600000")
+@SpringBootTest(classes = VentasApplication.class,
+        properties = {"ventas.vencimiento-cada-ms=3600000", "ventas.fila.avance-cada-ms=3600000"})
 abstract class IntegracionBase {
 
     static final long EVENTO = 7L;
@@ -77,7 +78,8 @@ abstract class IntegracionBase {
      */
     @BeforeEach
     void prepararEvento() {
-        jdbc.sql("TRUNCATE devolucion, detalle_compra, evento_asiento, cupo_sector, compra RESTART IDENTITY CASCADE")
+        jdbc.sql("TRUNCATE turno_fila, fila_virtual, devolucion, detalle_compra, evento_asiento, cupo_sector, compra "
+                + "RESTART IDENTITY CASCADE")
                 .update();
 
         when(eventos.obtener(EVENTO)).thenReturn(Optional.of(new ClientDtos.EventoInfo(

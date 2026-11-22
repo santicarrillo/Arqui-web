@@ -269,3 +269,67 @@ email en usuarios-service.
 
 **Tests:** `NotificacionesIntegrationTest` (7), y en los productores: `FlujoCompraTest` y `DevolucionTest` en
 ventas, `publicar_un_evento_con_artistas_avisa_a_notificaciones` y `EventoServiceTest` en eventos.
+
+## F10 · Fila virtual simplificada (ventas)
+
+**Para qué:** en una venta masiva, miles de clientes intentan comprar en el mismo segundo. La fila virtual
+limita cuántos compran a la vez; el resto espera su turno consultando una lectura barata.
+
+**Cómo funciona**
+1. El organizador del evento (o un administrador) la activa: `PUT /filas/{eventoId}` con
+   `{"simultaneos": 50, "minutosTurno": 10}` (cuántos clientes compran a la vez y cuánto tiempo tiene cada uno).
+2. Cada cliente saca un turno, `POST /filas/{eventoId}/turno`, y recibe un número. Pedirlo de nuevo devuelve el
+   mismo (no lo manda al final).
+3. Cada 5 segundos, `FilaVirtualJob` vence los turnos sin tiempo y habilita a los siguientes por orden de número
+   hasta completar los simultáneos.
+4. Mientras la fila está activa, `POST /compras` solo acepta a quien tiene turno habilitado y vigente:
+   - `409 TURNO_REQUERIDO`: no sacó turno;
+   - `409 TURNO_EN_ESPERA`: todavía no le toca (el mensaje dice cuántas personas hay antes);
+   - `409 TURNO_VENCIDO`: se le terminó el tiempo (puede sacar otro, va al final).
+5. Al crear la compra, el turno pasa a `USADO` y su lugar en la tanda queda libre para el siguiente. Hasta que
+   vence, puede seguir comprando (el límite por cliente se sigue aplicando).
+6. `DELETE /filas/{eventoId}` vuelve a la compra directa.
+
+`GET /filas/{eventoId}` (si hay fila, cuántos esperan y cuántos compran) y `GET /filas/{eventoId}/turno`
+(mi número, cuántos hay antes o hasta cuándo puedo comprar) son para que la GUI muestre la espera.
+
+**Tablas** (`schema.sql`): `fila_virtual` (configuración por evento y último número entregado) y `turno_fila`
+(un turno por cliente y evento: `ESPERANDO → HABILITADO → USADO | VENCIDO`).
+
+**Concurrencia**
+- **Números distintos:** el número sale de `UPDATE fila_virtual SET ultimo_numero = ultimo_numero + 1 ... RETURNING`.
+  PostgreSQL ordena los pedidos simultáneos y cada uno recibe uno distinto (test con 30 clientes a la vez). El
+  UPDATE se confirma enseguida, así la fila del evento queda bloqueada solo un instante. Si algo falla después
+  queda un número sin usar, y no molesta: se habilita por orden, no por números consecutivos.
+- **No habilitar de más:** el avance bloquea la fila del evento (`SELECT ... FOR UPDATE`) durante su
+  transacción. Con dos instancias de ventas, una espera a la otra.
+- **La no doble venta no cambia:** la fila solo regula quién entra; los lugares se siguen tomando con los UPDATE
+  condicionales de siempre.
+
+**Dónde se controla:** en `CompraController`, antes de `CompraService.crear`. Así la lógica de compra (y sus
+tests) no cambia, y sin fila activa el control es una sola consulta por clave primaria.
+
+**Simplificaciones:** el avance es por sondeo cada 5 s (no avisa en el momento; la GUI consulta el turno);
+la fila vive en la misma base de ventas. Para millones de clientes se usaría una estructura en memoria
+compartida (por ejemplo Redis) y avisos por WebSocket.
+
+**Tests:** `FilaVirtualTest` (10).
+
+---
+
+## Avisos para el grupo (lo que depende de otras partes)
+
+- **F2 (Docker):** hay dos servicios nuevos, `ms-preferencias` (8086) y `ms-notificaciones` (8087). Variables:
+  - eventos: `EVENTOS_MONGO_URI=mongodb://root:password@eventos-db:27017/eventos?authSource=admin`,
+    `LUGARES_URL`, `VENTAS_URL`, `NOTIFICACIONES_URL`;
+  - ventas: `EVENTOS_URL`, `LUGARES_URL`, `PAGOS_URL`, `PREFERENCIAS_URL`, `NOTIFICACIONES_URL`;
+  - preferencias: `PREFERENCIAS_MONGO_URI=mongodb://root:password@eventos-db:27017/preferencias?authSource=admin`, `EVENTOS_URL`;
+  - notificaciones: `NOTIFICACIONES_MONGO_URI=mongodb://root:password@eventos-db:27017/notificaciones?authSource=admin`, `PREFERENCIAS_URL`;
+  - gateway: `PREFERENCIAS_URL`, `NOTIFICACIONES_URL` (además de los que ya tenía).
+  Publicar solo el puerto del gateway; los `/interno/**` no tienen ruta en el gateway.
+- **F1 (seguridad):** falta la autorización por rol en el gateway y que el registro no permita crear un
+  ADMINISTRADOR. Los servicios ya controlan el rol donde importa (reportes, fila, ingresos, devoluciones,
+  preferencias).
+- **F3** sigue pendiente.
+- **Postman (F14):** todas las rutas necesitan token. El paso manual de `/interno/disponibilidad` ya no hace
+  falta: publicar el evento la prepara sola (F12).

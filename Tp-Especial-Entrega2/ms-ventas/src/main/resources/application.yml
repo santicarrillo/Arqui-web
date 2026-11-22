@@ -34,6 +34,9 @@ ventas:
   reserva-minutos: 10
   limite-por-cliente: 6
   vencimiento-cada-ms: 30000
+  # F10: cada cuanto avanzan las filas virtuales (vencer turnos y habilitar a los siguientes)
+  fila:
+    avance-cada-ms: 5000
 # F11: resiliencia en las llamadas a pagos-service. Los reintentos son seguros porque pagos es idempotente:
 # un segundo POST /pagos con la misma compra devuelve el pago que ya existe.
 resilience4j:
