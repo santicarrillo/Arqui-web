@@ -49,7 +49,7 @@ public class EventoRepository {
         mongo.insert(new Evento(id, r.nombre(), r.descripcion(), r.tipo(), r.fechaHora(), "BORRADOR",
                 r.lugarId(), r.ciudad(), r.organizadorId(),
                 r.limitePorCliente() == null ? 6 : r.limitePorCliente(),
-                null, List.of(), List.of()));
+                null, List.of(), List.of(), null));
         return id;
     }
 
@@ -57,14 +57,35 @@ public class EventoRepository {
         return Optional.ofNullable(mongo.findById(id, Evento.class));
     }
 
-    public void cambiarEstado(long id, String estado) {
-        mongo.updateFirst(porId(id), new Update().set("estado", estado), Evento.class);
+    /** BORRADOR -> PUBLICADO. Es condicional: si dos pedidos publican a la vez, solo uno lo cambia. */
+    public boolean publicar(long id) {
+        return mongo.updateFirst(
+                Query.query(Criteria.where("_id").is(id).and("estado").is("BORRADOR")),
+                new Update().set("estado", "PUBLICADO"),
+                Evento.class).getModifiedCount() == 1;
     }
 
-    public void cancelar(long id, String motivo) {
-        mongo.updateFirst(porId(id),
-                new Update().set("estado", "CANCELADO").set("motivoCancelacion", motivo),
-                Evento.class);
+    /**
+     * Pasa a CANCELADO (desde cualquier estado menos CANCELADO) y deja la cancelacion pendiente de avisar a
+     * ventas. Devuelve false si ya estaba cancelado.
+     */
+    public boolean cancelar(long id, String motivo) {
+        return mongo.updateFirst(
+                Query.query(Criteria.where("_id").is(id).and("estado").ne("CANCELADO")),
+                new Update().set("estado", "CANCELADO")
+                            .set("motivoCancelacion", motivo)
+                            .set("cancelacionNotificada", false),
+                Evento.class).getModifiedCount() == 1;
+    }
+
+    public void marcarCancelacionNotificada(long id) {
+        mongo.updateFirst(porId(id), new Update().set("cancelacionNotificada", true), Evento.class);
+    }
+
+    /** Eventos cancelados cuyo aviso a ventas todavia no se pudo entregar. */
+    public List<Long> cancelacionesPendientes() {
+        Query query = Query.query(Criteria.where("estado").is("CANCELADO").and("cancelacionNotificada").is(false));
+        return mongo.find(query, Evento.class).stream().map(Evento::id).toList();
     }
 
     // ---- busqueda por multiples criterios (los filtros que vienen se suman al query) ----

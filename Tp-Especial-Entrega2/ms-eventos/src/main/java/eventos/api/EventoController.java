@@ -47,9 +47,8 @@ public class EventoController {
     }
 
     @PutMapping("/{id}/cancelacion")
-    public ResponseEntity<Void> cancelar(@PathVariable long id, @RequestBody Dtos.CancelacionRequest req) {
-        service.cancelar(id, req.motivo());
-        return ResponseEntity.ok().build();
+    public Dtos.CancelacionView cancelar(@PathVariable long id, @RequestBody Dtos.CancelacionRequest req) {
+        return service.cancelar(id, req.motivo());
     }
 
     // busqueda por multiples criterios (todos opcionales)
