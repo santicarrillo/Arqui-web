@@ -1,0 +1,76 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ventas-service
+  datasource:
+    url: ${VENTAS_DB_URL:jdbc:postgresql://localhost:5433/ventas}
+    username: ${VENTAS_DB_USER:ventas}
+    password: ${VENTAS_DB_PASSWORD:ventas}
+    hikari:
+      maximum-pool-size: 20
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+# Servicios a los que llama ventas (por el contrato openapi.yaml)
+servicios:
+  eventos:
+    url: ${EVENTOS_URL:http://localhost:8082}
+  lugares:
+    url: ${LUGARES_URL:http://localhost:8084}
+  pagos:
+    url: ${PAGOS_URL:http://localhost:8085}
+  # F9: se le avisa cada compra confirmada, para el historial y las recomendaciones
+  preferencias:
+    url: ${PREFERENCIAS_URL:http://localhost:8086}
+  # F8: avisos al cliente (compra confirmada, evento cancelado)
+  notificaciones:
+    url: ${NOTIFICACIONES_URL:http://localhost:8087}
+
+ventas:
+  reserva-minutos: 10
+  limite-por-cliente: 6
+  vencimiento-cada-ms: 30000
+  # F10: cada cuanto avanzan las filas virtuales (vencer turnos y habilitar a los siguientes)
+  fila:
+    avance-cada-ms: 5000
+# F11: resiliencia en las llamadas a pagos-service. Los reintentos son seguros porque pagos es idempotente:
+# un segundo POST /pagos con la misma compra devuelve el pago que ya existe.
+resilience4j:
+  retry:
+    instances:
+      pagos:
+        max-attempts: 3
+        wait-duration: 300ms
+        retry-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+      # F9: avisos a otros servicios despues de una compra (corren aparte, el cliente no los espera)
+      avisos:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+  circuitbreaker:
+    instances:
+      pagos:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,circuitbreakers,retries
+  health:
+    circuitbreakers:
+      enabled: true

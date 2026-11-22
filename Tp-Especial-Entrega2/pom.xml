@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>Tp-Especial-Entrega1</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- Testcontainers 1.19.x pide por defecto una version de la API de Docker que
+             Docker Engine 29+ ya no acepta (responde 400). Se fija la 1.44 para los tests. -->
+        <argLine>-Dapi.version=1.44</argLine>
+    </properties>
+
+    <modules>
+        <module>ms-ventas</module>
+        <module>ms-eventos</module>
+        <module>ms-lugares</module>
+        <module>api-gateway</module>
+        <module>ms-usuarios</module>
+        <module>ms-pagos</module>
+        <module>ms-preferencias</module>
+        <module>ms-notificaciones</module>
+    </modules>
+</project>

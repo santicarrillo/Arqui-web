@@ -1,0 +1,39 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: eventos-service
+  data:
+    mongodb:
+      # Base documental: cada evento es un documento con sus sectores y participantes adentro.
+      # La base corre con usuario y contrasena (--auth); el usuario root se crea en la base "admin",
+      # por eso authSource=admin. En Docker se pisa con la variable EVENTOS_MONGO_URI.
+      uri: ${EVENTOS_MONGO_URI:mongodb://root:password@localhost:27017/eventos?authSource=admin}
+      # Crea los indices declarados en Evento (@Indexed, @CompoundIndex) al arrancar
+      auto-index-creation: true
+
+# F12: al publicar, eventos le pide a lugares la capacidad de cada sector y si es numerado
+servicios:
+  lugares:
+    url: ${LUGARES_URL:http://localhost:8084}
+  # y le pide a ventas que prepare asientos y cupos; al cancelar, le avisa a ventas
+  ventas:
+    url: ${VENTAS_URL:http://localhost:8083}
+  # F8: al publicar, se avisa a notificaciones para los seguidores de los artistas
+  notificaciones:
+    url: ${NOTIFICACIONES_URL:http://localhost:8087}
+
+eventos:
+  # cada cuanto se reintentan los avisos de cancelacion que ventas no pudo recibir
+  reintento-cancelaciones-ms: 60000
+  # F5: cuanto vive cada entrada de la cache (ademas se borra en cada cambio del evento)
+  cache:
+    detalle-segundos: 30
+    busqueda-segundos: 60
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,caches,metrics
