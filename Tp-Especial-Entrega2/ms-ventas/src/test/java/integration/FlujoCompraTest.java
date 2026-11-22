@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +56,8 @@ class FlujoCompraTest extends IntegracionBase {
         assertEquals("PAGADA", pagado.compra().estado());
         assertEquals("VENDIDO", estadoAsiento(ASIENTO));
         assertNotNull(pagado.compra().detalle().get(0).codigoQr(), "cada entrada recibe su QR");
+        // F9: despues de confirmar, preferencias se entera de la compra (en otro hilo, por eso el timeout)
+        verify(preferencias, timeout(2000)).registrarCompra(CLIENTE, EVENTO);
     }
 
     @Test
@@ -67,6 +72,8 @@ class FlujoCompraTest extends IntegracionBase {
         assertEquals("LIBRE", estadoAsiento(ASIENTO));
         // el lugar quedo disponible para otro cliente
         assertEquals("PENDIENTE", compras.crear(77L, "otra-clave", pedidoAsiento(ASIENTO)).compra().estado());
+        // F9: una compra rechazada no se avisa
+        verify(preferencias, after(500).never()).registrarCompra(anyLong(), anyLong());
     }
 
     @Test

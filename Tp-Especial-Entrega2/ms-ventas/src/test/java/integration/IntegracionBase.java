@@ -6,6 +6,7 @@ import ventas.client.ClientDtos;
 import ventas.client.EventosClient;
 import ventas.client.LugaresClient;
 import ventas.client.PagosClient;
+import ventas.client.PreferenciasClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 /**
-        * Base de las pruebas de integracion: PostgreSQL real en un contenedor (hace falta Docker) y los tres
+        * Base de las pruebas de integracion: PostgreSQL real en un contenedor (hace falta Docker) y los
  * servicios externos simulados. El contenedor es unico para todas las clases, asi el contexto de Spring
  * se puede reutilizar.
  */
@@ -57,6 +58,8 @@ abstract class IntegracionBase {
     protected LugaresClient lugares;
     @MockBean
     protected PagosClient pagos;
+    @MockBean
+    protected PreferenciasClient preferencias;
 
     @Autowired
     protected JdbcClient jdbc;

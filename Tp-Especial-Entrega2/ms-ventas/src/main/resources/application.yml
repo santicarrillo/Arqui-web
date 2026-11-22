@@ -23,6 +23,9 @@ servicios:
     url: ${LUGARES_URL:http://localhost:8084}
   pagos:
     url: ${PAGOS_URL:http://localhost:8085}
+  # F9: se le avisa cada compra confirmada, para el historial y las recomendaciones
+  preferencias:
+    url: ${PREFERENCIAS_URL:http://localhost:8086}
 
 ventas:
   reserva-minutos: 10
@@ -36,6 +39,12 @@ resilience4j:
       pagos:
         max-attempts: 3
         wait-duration: 300ms
+        retry-exceptions:
+          - ventas.Domains.ServicioNoDisponibleException
+      # F9: avisos a otros servicios despues de una compra (corren aparte, el cliente no los espera)
+      avisos:
+        max-attempts: 3
+        wait-duration: 1s
         retry-exceptions:
           - ventas.Domains.ServicioNoDisponibleException
   circuitbreaker:

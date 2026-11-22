@@ -1,5 +1,6 @@
 package ventas.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ventas.Domains.ApiException;
 import ventas.Domains.Compra;
@@ -36,16 +37,19 @@ public class CompraService {
     private final VentasRepository repo;
     private final EventosClient eventos;
     private final PagosClient pagos;
+    private final ApplicationEventPublisher publicador;
     private final Clock clock;
     private final int minutosReserva;
     private final int limiteDefecto;
 
-    public CompraService(VentasRepository repo, EventosClient eventos, PagosClient pagos, Clock clock,
+    public CompraService(VentasRepository repo, EventosClient eventos, PagosClient pagos,
+                         ApplicationEventPublisher publicador, Clock clock,
                          @Value("${ventas.reserva-minutos:10}") int minutosReserva,
                          @Value("${ventas.limite-por-cliente:6}") int limiteDefecto) {
         this.repo = repo;
         this.eventos = eventos;
         this.pagos = pagos;
+        this.publicador = publicador;
         this.clock = clock;
         this.minutosReserva = minutosReserva;
         this.limiteDefecto = limiteDefecto;
@@ -200,13 +204,17 @@ public class CompraService {
 
     private void confirmar(Compra compra, String medioPago) {
         repo.venderAsientos(compra.id());
-        for (Detalle d : repo.detalles(compra.id())) {
+        List<Detalle> detalles = repo.detalles(compra.id());
+        for (Detalle d : detalles) {
             if (d.codigoQr() == null) {
                 repo.asignarQr(d.id(), "QR-%d-%d-%d-%s".formatted(compra.eventoId(), compra.id(), d.id(),
                         UUID.randomUUID().toString().substring(0, 8)));
             }
         }
         repo.marcarPagada(compra.id(), medioPago);
+        // F9: aviso a otros servicios. Se entrega recien cuando la transaccion confirma (ver CompraConfirmada).
+        publicador.publishEvent(new CompraConfirmada(compra.id(), compra.clienteId(), compra.eventoId(),
+                compra.total(), detalles.size()));
     }
 
     // --------------------------------------------------- cancelar y vencer

@@ -1,0 +1,18 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: preferencias-service
+  data:
+    mongodb:
+      # Mismo servidor MongoDB que eventos (eventos-db del docker-compose), pero su propia base: "preferencias".
+      # El usuario root vive en la base "admin", por eso authSource=admin. En Docker: PREFERENCIAS_MONGO_URI.
+      uri: ${PREFERENCIAS_MONGO_URI:mongodb://root:password@localhost:27017/preferencias?authSource=admin}
+      # crea los indices declarados en Perfil (@Indexed) al arrancar
+      auto-index-creation: true
+
+# las recomendaciones salen del catalogo de eventos publicados
+servicios:
+  eventos:
+    url: ${EVENTOS_URL:http://localhost:8082}

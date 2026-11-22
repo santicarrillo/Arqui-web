@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -96,6 +97,28 @@ public final class RestClients {
                 throw ApiException.notFound("SECTOR_NO_ENCONTRADO", "El sector " + sectorId + " no existe en lugares");
             } catch (RestClientException e) {
                 throw caido("lugares-service", e);
+            }
+        }
+    }
+
+    /** F9: le avisa a preferencias-service que un cliente compro entradas para un evento. */
+    @Component
+    public static class PreferenciasRestClient implements PreferenciasClient {
+
+        private final RestClient http;
+
+        public PreferenciasRestClient(RestClient.Builder builder, @Value("${servicios.preferencias.url}") String url) {
+            this.http = builder.baseUrl(url).requestFactory(conTimeouts(2000)).build();
+        }
+
+        @Override
+        public void registrarCompra(long clienteId, long eventoId) {
+            try {
+                http.post().uri("/interno/compras")
+                        .body(Map.of("clienteId", clienteId, "eventoId", eventoId))
+                        .retrieve().toBodilessEntity();
+            } catch (RestClientException e) {
+                throw caido("preferencias-service", e);
             }
         }
     }
