@@ -152,5 +152,6 @@ class EventoServiceTest {
         assertEquals(12L, info.sectores().get(0).sectorId());
         assertTrue(info.sectores().get(0).numerado());
         assertEquals(0, new BigDecimal("30000").compareTo(info.sectores().get(0).precio()));
+        assertEquals(1L, info.organizadorId());
     }
 }

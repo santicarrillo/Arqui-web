@@ -105,3 +105,31 @@ circuito abierto, el reintento no insiste (`CallNotPermittedException` no es rei
 endpoint. `PagosResilienciaTest` lo prueba sin Docker, con un pagos falso que falla a propósito.
 
 **Notificaciones:** el envío es asíncrono y nunca frena la operación principal; se describe en la F8.
+
+## F7 · Reportes del organizador (funcionalidad 12)
+
+**Endpoint:** `GET /reportes/eventos/{eventoId}` en ventas (pasa por el gateway). Responde, por sector y en
+total: capacidad, entradas vendidas, devueltas, ingresados (ya pasaron por la puerta), porcentaje de
+ocupación y recaudación.
+
+```json
+{ "eventoId": 7, "capacidad": 6, "vendidas": 2, "devueltas": 1, "ingresados": 1,
+  "ocupacionPorcentaje": 33.3, "recaudacion": 45000.00,
+  "sectores": [
+    { "sectorId": 1, "numerado": true,  "capacidad": 5, "vendidas": 1, "devueltas": 1, "ingresados": 1,
+      "ocupacionPorcentaje": 20.0, "recaudacion": 30000.00 },
+    { "sectorId": 2, "numerado": false, "capacidad": 1, "vendidas": 1, "devueltas": 0, "ingresados": 0,
+      "ocupacionPorcentaje": 100.0, "recaudacion": 15000.00 } ] }
+```
+
+**De dónde sale cada número** (todo está en la base de ventas, dos consultas):
+- Capacidad: el cupo de cada zona (`cupo_sector`) y la cantidad de asientos de cada sector numerado
+  (`evento_asiento`).
+- Vendidas: entradas de compras `PAGADA` que siguen valiendo (`VALIDA` o `USADA`). Las reservas sin pagar no
+  cuentan.
+- Recaudación: suma de esas entradas; las devueltas se descuentan.
+- Ocupación: vendidas / capacidad.
+
+**Quién puede verlo:** un `ORGANIZADOR` solo los de sus eventos (403 `NO_ES_TU_EVENTO`); un `ADMINISTRADOR`,
+todos. El dueño del evento lo informa eventos: `GET /eventos/{id}` suma el campo `organizadorId` (agregar un
+campo no rompe a quien no lo usa).
