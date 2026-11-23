@@ -1,22 +1,27 @@
-/* TicketYa: tinta azul sobre papel gris frio, y el amarillo de las pulseras de los recitales para lo
+/* TicketYa: noche de recital. Fondo casi negro, texto claro y un magenta de luces de escenario para lo
    que elegis vos (tus asientos, el boton de comprar, el talon de tu entrada). */
 :root {
-  --papel: #edeff2;
-  --superficie: #ffffff;
-  --tinta: #1b2340;
-  --tinta-suave: #4a5470;
-  --linea: #c9ced8;
-  --pulsera: #f5c400;
-  --pulsera-oscura: #dcae00;
-  --pulsera-clara: #fff6cc;
-  --error: #b3261e;
-  --error-claro: #fbe9e7;
-  --ok: #1f6e4e;
-  --ok-claro: #e3f3ec;
+  --papel: #121016;
+  --superficie: #1d1a23;
+  --tinta: #f2eff5;
+  --tinta-suave: #a9a2b3;
+  --linea: #3a3542;
+  --borde: #5a5364;
+  --pulsera: #e11d74;
+  --pulsera-oscura: #f0287f;
+  --pulsera-clara: #3a1628;
+  --sobre-pulsera: #ffffff;
+  --talon-tinta: #121016;
+  --apagado: #6d6677;
+  --apagado-fondo: #2a2630;
+  --error: #ff6b6b;
+  --error-claro: #3a1717;
+  --ok: #4fd18b;
+  --ok-claro: #12301f;
   --radio: 8px;
   --display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
   --texto: 'Barlow', system-ui, sans-serif;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -37,7 +42,7 @@ h1, h2, h3, p { margin: 0; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 button, input, select { font: inherit; color: inherit; }
 
-:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 3px solid var(--borde); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------------------------------------------------------------- estructura */
 
@@ -48,7 +53,7 @@ button, input, select { font: inherit; color: inherit; }
   align-items: center;
   gap: 2rem;
   padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
-  border-bottom: 2px solid var(--tinta);
+  border-bottom: 2px solid var(--borde);
   background: var(--superficie);
 }
 
@@ -64,7 +69,7 @@ button, input, select { font: inherit; color: inherit; }
 .barra-nav { display: flex; gap: 1.5rem; }
 .barra-nav a { text-decoration: none; font-weight: 500; padding: 0.25rem 0; border-bottom: 3px solid transparent; }
 .barra-nav a:hover { border-bottom-color: var(--linea); }
-.barra-nav a.active { border-bottom-color: var(--pulsera); }
+.barra-nav a.active { border-bottom-color: var(--pulsera); color: var(--tinta); }
 
 .barra-usuario { margin-left: auto; display: flex; align-items: center; gap: 1rem; color: var(--tinta-suave); }
 
@@ -121,7 +126,7 @@ button, input, select { font: inherit; color: inherit; }
   gap: 0.5rem;
   min-height: 2.75rem;
   padding: 0.5rem 1.25rem;
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
   border-radius: 6px;
   font-weight: 600;
   text-decoration: none;
@@ -129,8 +134,8 @@ button, input, select { font: inherit; color: inherit; }
   white-space: nowrap;
 }
 .boton:disabled { cursor: not-allowed; opacity: 0.45; }
-.boton-principal { background: var(--pulsera); }
-.boton-principal:hover:not(:disabled) { background: var(--pulsera-oscura); }
+.boton-principal { background: var(--pulsera); border-color: var(--pulsera); color: var(--sobre-pulsera); }
+.boton-principal:hover:not(:disabled) { background: var(--pulsera-oscura); border-color: var(--pulsera-oscura); }
 .boton-secundario { background: transparent; }
 .boton-secundario:hover:not(:disabled) { background: var(--superficie); }
 .boton-ancho { width: 100%; }
@@ -156,7 +161,7 @@ input, select {
   background: var(--superficie);
   font-weight: 400;
 }
-input:focus-visible, select:focus-visible { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3px var(--pulsera); }
+input:focus-visible, select:focus-visible { outline: none; border-color: var(--pulsera); box-shadow: 0 0 0 3px var(--pulsera); }
 
 /* ---------------------------------------------------------------- avisos */
 
@@ -168,7 +173,7 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
   flex-wrap: wrap;
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border-left: 4px solid var(--tinta);
+  border-left: 4px solid var(--borde);
   border-radius: 0 6px 6px 0;
   background: var(--superficie);
 }
@@ -180,15 +185,65 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
 .acceso { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 
 .acceso-portada {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 1rem;
   padding: clamp(2rem, 6vw, 5rem);
-  background: var(--tinta);
-  color: var(--superficie);
+  padding-bottom: clamp(9rem, 26vh, 15rem);
+  background: radial-gradient(ellipse at 50% 120%, #4a0f2d 0%, #1a0d18 50%, #0b0a0e 100%);
+  color: var(--tinta);
 }
-.acceso-portada p { max-width: 26rem; font-size: 1.1875rem; color: #d4d8e4; }
+.acceso-portada > :not(.escenario) { position: relative; z-index: 1; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.7); }
+.acceso-portada p { max-width: 26rem; font-size: 1.1875rem; color: #d9d3e0; }
+
+/* escena del recital detras del titulo (componentes/Escenario.jsx) */
+.escenario { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+.escenario-bruma {
+  position: absolute;
+  inset: auto -10% 0;
+  height: 70%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(225, 29, 116, 0.35), transparent 65%);
+  animation: escenario-latido 4s ease-in-out infinite;
+}
+
+.escenario-haz {
+  position: absolute;
+  top: -10%;
+  width: 18rem;
+  height: 120%;
+  transform-origin: 50% 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(225, 29, 116, 0.12) 45%, transparent 85%);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  filter: blur(6px);
+  mix-blend-mode: screen;
+}
+.escenario-haz-1 { left: 2%;  animation: escenario-barrido 7s ease-in-out infinite alternate; }
+.escenario-haz-2 { left: 28%; animation: escenario-barrido 9s ease-in-out -3s infinite alternate-reverse; }
+.escenario-haz-3 { left: 52%; animation: escenario-barrido 8s ease-in-out -5s infinite alternate;
+                   background: linear-gradient(to bottom, rgba(170, 120, 255, 0.25), rgba(120, 60, 220, 0.1) 45%, transparent 85%); }
+.escenario-haz-4 { left: 76%; animation: escenario-barrido 10s ease-in-out -2s infinite alternate-reverse; }
+
+.escenario-focos { position: absolute; top: 0.75rem; left: 6%; right: 6%; display: flex; justify-content: space-between; }
+.escenario-focos span {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 3px rgba(255, 46, 136, 0.9), 0 0 28px 8px rgba(225, 29, 116, 0.45);
+  animation: escenario-titila 2.8s ease-in-out infinite;
+}
+
+.escenario-publico { position: absolute; left: 0; bottom: 0; width: 100%; height: clamp(8rem, 28vh, 15rem); }
+.escenario-celular { fill: #fff; filter: drop-shadow(0 0 4px #ff8cc0); animation: escenario-titila 2.4s ease-in-out infinite; }
+
+@keyframes escenario-barrido { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+@keyframes escenario-titila { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes escenario-latido { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
 
 .marca-grande {
   font-size: clamp(4rem, 11vw, 9rem);
@@ -219,7 +274,7 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
 }
 .filtros-acciones { display: flex; align-items: center; gap: 1rem; }
 
-.cartelera { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--tinta); }
+.cartelera { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--borde); }
 
 .cartelera-fila {
   display: grid;
@@ -261,7 +316,7 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
 .cantidad { display: inline-grid; grid-template-columns: 2.75rem 2.5rem 2.75rem; align-items: center; text-align: center; }
 .cantidad button {
   height: 2.75rem;
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
   background: var(--superficie);
   font-size: 1.25rem;
   cursor: pointer;
@@ -278,8 +333,8 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
   margin: 0 auto 1.5rem;
   padding: 0.375rem;
   border-radius: 0 0 40% 40% / 0 0 100% 100%;
-  background: var(--tinta);
-  color: var(--superficie);
+  background: var(--pulsera);
+  color: var(--sobre-pulsera);
   text-align: center;
   font-family: var(--display);
   font-weight: 700;
@@ -301,13 +356,13 @@ input:focus-visible, select:focus-visible { outline: none; border-color: var(--t
   padding: 0;
 }
 button.asiento { cursor: pointer; }
-.asiento-libre { background: var(--superficie); border: 2px solid var(--tinta); }
-.asiento-libre:hover { background: var(--pulsera-clara); }
-.asiento-elegido { background: var(--pulsera); border: 2px solid var(--tinta); }
+.asiento-libre { background: var(--superficie); border: 2px solid var(--borde); }
+.asiento-libre:hover { background: var(--pulsera-clara); border-color: var(--pulsera); }
+.asiento-elegido { background: var(--pulsera); border: 2px solid var(--pulsera); color: var(--sobre-pulsera); }
 .asiento-ocupado {
   border: 2px solid transparent;
-  color: #8d94a6;
-  background: repeating-linear-gradient(135deg, #dfe2e8 0 4px, #cfd3db 4px 8px);
+  color: var(--apagado);
+  background: repeating-linear-gradient(135deg, #26222c 0 4px, #1f1c25 4px 8px);
 }
 button.asiento-ocupado { cursor: not-allowed; }
 
@@ -321,7 +376,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   top: 1.5rem;
   padding: 1.25rem;
   background: var(--superficie);
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
 }
 .pedido .subtitulo { margin-top: 0; }
@@ -336,7 +391,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   justify-content: space-between;
   margin: 1rem 0;
   padding-top: 0.75rem;
-  border-top: 2px solid var(--tinta);
+  border-top: 2px solid var(--borde);
   font-weight: 600;
   font-size: 1.1875rem;
   font-variant-numeric: tabular-nums;
@@ -349,11 +404,11 @@ button.asiento-ocupado { cursor: not-allowed; }
   margin: 1rem 0;
   padding: 1rem;
   background: var(--pulsera-clara);
-  border: 2px dashed var(--tinta);
+  border: 2px dashed var(--borde);
   border-radius: var(--radio);
   font-size: 0.9375rem;
 }
-.fila-turno { border-style: solid; background: var(--pulsera); }
+.fila-turno { border-style: solid; border-color: var(--pulsera); background: var(--pulsera); color: var(--sobre-pulsera); }
 .fila-numero { font-family: var(--display); font-weight: 900; font-size: 1.75rem; line-height: 1; }
 
 /* ---------------------------------------------------------------- compra */
@@ -363,7 +418,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   margin-top: 1.5rem;
   padding: 1.5rem;
   background: var(--superficie);
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
 }
 
@@ -384,8 +439,8 @@ button.asiento-ocupado { cursor: not-allowed; }
   font-weight: 500;
   cursor: pointer;
 }
-.medio:has(input:checked) { border-color: var(--tinta); background: var(--pulsera-clara); }
-.medio input { min-height: auto; accent-color: var(--tinta); width: 1.125rem; height: 1.125rem; }
+.medio:has(input:checked) { border-color: var(--pulsera); background: var(--pulsera-clara); }
+.medio input { min-height: auto; accent-color: var(--pulsera); width: 1.125rem; height: 1.125rem; }
 
 .compra-acciones { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
 
@@ -401,7 +456,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   grid-template-columns: minmax(0, 1fr) 13rem;
   max-width: 44rem;
   background: var(--superficie);
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -424,8 +479,8 @@ button.asiento-ocupado { cursor: not-allowed; }
   gap: 0.625rem;
   padding: 1.25rem 1rem;
   background: var(--pulsera);
-  border-left: 2px dashed var(--tinta);
-  color: var(--tinta);
+  border-left: 2px dashed var(--borde);
+  color: var(--talon-tinta);
 }
 .entrada-talon::before,
 .entrada-talon::after {
@@ -436,7 +491,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   height: 24px;
   border-radius: 50%;
   background: var(--papel);
-  border: 2px solid var(--tinta);
+  border: 2px solid var(--borde);
 }
 .entrada-talon::before { top: -14px; }
 .entrada-talon::after { bottom: -14px; }
@@ -453,7 +508,7 @@ button.asiento-ocupado { cursor: not-allowed; }
 .entrada-nota { margin-top: 0.875rem; font-size: 0.9375rem; color: var(--tinta-suave); flex-basis: 100%; }
 .entrada-nota-error { color: var(--error); margin-top: 0; }
 
-.entrada-anulada .entrada-talon { background: #e4e7ec; color: #8d94a6; }
+.entrada-anulada .entrada-talon { background: var(--apagado-fondo); color: var(--apagado); }
 .entrada-sello {
   position: absolute;
   top: 50%;
@@ -478,7 +533,8 @@ button.asiento-ocupado { cursor: not-allowed; }
   .detalle { grid-template-columns: 1fr; }
   .pedido { position: static; }
   .acceso { grid-template-columns: 1fr; }
-  .acceso-portada { padding-top: 3rem; padding-bottom: 2rem; }
+  .acceso-portada { min-height: 24rem; padding-top: 3rem; padding-bottom: 9rem; }
+  .escenario-haz { width: 11rem; }
 }
 
 @media (max-width: 36rem) {
@@ -489,7 +545,7 @@ button.asiento-ocupado { cursor: not-allowed; }
   .sector-cabecera { grid-template-columns: 1fr auto; }
   .sector-cabecera > :last-child { grid-column: 1 / -1; justify-self: start; }
   .entrada { grid-template-columns: 1fr; }
-  .entrada-talon { border-left: none; border-top: 2px dashed var(--tinta); }
+  .entrada-talon { border-left: none; border-top: 2px dashed var(--borde); }
   .entrada-talon::before { top: -13px; left: -14px; }
   .entrada-talon::after { top: -13px; bottom: auto; left: auto; right: -14px; }
 }

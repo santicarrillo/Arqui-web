@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { tomarAviso, useSesion } from '../sesion'
 import Mensaje from '../componentes/Mensaje'
+import Escenario from '../componentes/Escenario'
 
 export default function Login() {
   const { sesion, iniciar } = useSesion()
@@ -31,6 +32,7 @@ export default function Login() {
   return (
     <div className="acceso">
       <section className="acceso-portada">
+        <Escenario />
         <h1 className="marca marca-grande">TicketYa</h1>
         <p>Entradas para recitales, teatro y festivales. Elegís tu lugar, pagás y el QR te queda en el celular.</p>
       </section>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useSesion } from '../sesion'
 import Mensaje from '../componentes/Mensaje'
+import Escenario from '../componentes/Escenario'
 
 export default function Registro() {
   const { sesion, registrar } = useSesion()
@@ -30,6 +31,7 @@ export default function Registro() {
   return (
     <div className="acceso">
       <section className="acceso-portada">
+        <Escenario />
         <h1 className="marca marca-grande">TicketYa</h1>
         <p>Creá tu cuenta de cliente para comprar entradas y tenerlas siempre a mano.</p>
       </section>

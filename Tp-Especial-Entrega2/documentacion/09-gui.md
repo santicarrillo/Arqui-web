@@ -57,8 +57,12 @@ respuesta sigue cacheada (F5) y se invalida igual.
 
 ## Diseño visual
 
-Tinta azul sobre un gris frío tipo papel, y el **amarillo de las pulseras de los recitales** solo para lo que
-elige el cliente: sus asientos en el plano, el botón de comprar, el turno habilitado y el talón de la entrada.
+Tema oscuro tipo **noche de recital**: fondo casi negro, texto claro y un **magenta de luces de escenario** solo
+para lo que elige el cliente: sus asientos en el plano, el botón de comprar, el turno habilitado y el talón de la
+entrada. El QR del talón se dibuja oscuro sobre el magenta para que los lectores de la puerta lo lean bien.
+En las pantallas de iniciar sesión y crear cuenta, detrás del título hay una escena de recital animada (luces
+que barren el escenario y el público en silueta con celulares prendidos), hecha con SVG y CSS en
+`componentes/Escenario.jsx`, sin imágenes externas.
 Las entradas en "Mis entradas" tienen forma de entrada de papel: los datos de un lado y, del otro lado del
 troquel, el QR que se muestra en la puerta. Si la entrada ya se usó o se devolvió, lleva un sello y el QR
 queda apagado. Tipografías: Big Shoulders Display para títulos y Barlow para el texto, incluidas en el

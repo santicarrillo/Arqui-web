@@ -30,6 +30,23 @@ Crear una cuenta desde la pantalla de registro (queda como CLIENTE). Para que ha
 hay que crear un lugar, un evento y publicarlo: la colección `documentacion/TicketYa-E2.postman_collection.json`
 lo hace en las carpetas 1 a 4.
 
+### Usuarios de prueba
+
+Las carpetas 1 y 2 de esa colección crean estos usuarios (todos con contraseña `1234`):
+
+| Rol | Email | Para qué sirve |
+|---|---|---|
+| CLIENTE | `cli@a.com` | **El que se usa en la web**: busca eventos, compra y ve sus entradas. |
+| ORGANIZADOR | `orga@a.com` | Crea y publica eventos (por Postman/Swagger). |
+| ADMINISTRADOR | `admin@a.com` | Crea lugares y sectores, aprueba devoluciones (por Postman/Swagger). |
+| ACCESO | `acc@a.com` | Valida los QR en la puerta (por Postman/Swagger). |
+
+La web es solo para clientes: con los otros roles se puede iniciar sesión, pero muestra un aviso. También se
+puede crear una cuenta nueva desde "Crear cuenta", que siempre queda como CLIENTE.
+
+Después de las carpetas 3 y 4 queda publicado "Recital de Prueba" (Tandil, sector Campo sin numerar, 100
+lugares a $15.000), listo para comprar desde la web.
+
 ## Estructura
 
 ```
