@@ -32,6 +32,11 @@ en `Authorization: Bearer` en cada llamada. Si el gateway responde 401 con una s
 o inválido), la web cierra la sesión y vuelve al login con el aviso "Tu sesión venció". La web no decide
 permisos: los controla el backend, y la web solo muestra el mensaje de error que recibe.
 
+**Cambio en el backend: `GET /entradas` avisa si hay una devolución en curso.** La entrada sigue VALIDA hasta
+que un administrador aprueba la devolución, así que con solo el estado la web no sabía que ya se había pedido y,
+al recargar, volvía a ofrecer el botón. Se agregó **al final** el campo `devolucion` (`PENDIENTE`, `APROBADA` o
+`null`) y "Mis entradas" muestra "Pediste la devolución" en vez del botón.
+
 **Errores del backend tal cual.** Todos los micros responden los errores como `{error, mensaje}`. La web
 muestra el `mensaje` y usa el `error` para decidir qué hacer: con `TURNO_*` muestra la fila virtual, con un
 409 de lugares (alguien compró antes) recarga la disponibilidad y saca de tu pedido los asientos que ya no
@@ -73,8 +78,6 @@ respeta "reducir movimiento".
 
 ## Límites conocidos
 
-- La devolución pedida no se ve después de recargar: `GET /entradas` devuelve la entrada como VALIDA hasta
-  que un administrador la aprueba. Si se pide de nuevo, ventas responde que ya hay una en curso.
 - La web es solo para clientes. Con otro rol se puede entrar, pero muestra un aviso; las pantallas de
   organizador, administrador y personal de acceso quedan para Postman/Swagger.
 - El token se guarda en `localStorage`; en producción se preferiría una cookie `HttpOnly` para que un script

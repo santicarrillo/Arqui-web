@@ -53,7 +53,7 @@ export default function MisEntradas() {
               <Entrada key={e.entradaId} evento={g.datos?.evento} lugar={g.datos?.lugar} entrada={e}
                        sector={nombreSector(g.datos, e.sectorId)}
                        asiento={e.asientoId != null ? textoAsiento(asientos[e.sectorId], e.asientoId) : null}>
-                {e.estado === 'VALIDA' && <Devolucion entradaId={e.entradaId} />}
+                {e.estado === 'VALIDA' && <Devolucion entradaId={e.entradaId} pedida={e.devolucion === 'PENDIENTE'} />}
               </Entrada>
             ))}
           </div>
@@ -63,9 +63,12 @@ export default function MisEntradas() {
   )
 }
 
-/** Pedir la devolucion de una entrada: la aprueba un administrador (hasta 72 h antes del evento). */
-function Devolucion({ entradaId }) {
-  const [paso, setPaso] = useState('inicio')        // inicio | confirmar | pedida
+/**
+ * Pedir la devolucion de una entrada: la aprueba un administrador (hasta 72 h antes del evento).
+ * Si ya la pidio (GET /entradas trae devolucion PENDIENTE), muestra el aviso en vez del boton.
+ */
+function Devolucion({ entradaId, pedida }) {
+  const [paso, setPaso] = useState(pedida ? 'pedida' : 'inicio')        // inicio | confirmar | pedida
   const [error, setError] = useState(null)
 
   async function pedir() {

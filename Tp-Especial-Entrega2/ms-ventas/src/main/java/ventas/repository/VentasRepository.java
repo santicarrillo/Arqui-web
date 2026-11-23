@@ -47,7 +47,8 @@ public class VentasRepository {
             rs.getObject("asiento_id", Long.class),
             rs.getBigDecimal("precio_unitario"),
             rs.getString("codigo_qr"),
-            rs.getString("estado"));
+            rs.getString("estado"),
+            rs.getString("devolucion"));
 
     private final JdbcClient jdbc;
 
@@ -160,7 +161,9 @@ public class VentasRepository {
 
     private static final String ENTRADAS_SQL = """
             SELECT d.id AS entrada_id, d.compra_id, c.evento_id, d.sector_id, d.asiento_id,
-                   d.precio_unitario, d.codigo_qr, d.estado
+                   d.precio_unitario, d.codigo_qr, d.estado,
+                   (SELECT v.estado FROM devolucion v
+                    WHERE v.detalle_compra_id = d.id AND v.estado IN ('PENDIENTE', 'APROBADA')) AS devolucion
             FROM detalle_compra d JOIN compra c ON c.id = d.compra_id
             """;
 
