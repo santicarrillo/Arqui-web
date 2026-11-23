@@ -31,7 +31,9 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<Map<String, Long>> crear(@RequestHeader(value = "X-Rol", required = false) String rol,
                                                    @RequestBody Dtos.CrearUsuarioRequest req) {
-        if (ROLES_RESTRINGIDOS.contains(req.rol()) && !ADMIN.equals(rol))
+        // sin rol o con uno inexistente sigue al service, que responde 400 ROL_INVALIDO
+        // (Set.of no acepta contains(null): se chequea antes)
+        if (req.rol() != null && ROLES_RESTRINGIDOS.contains(req.rol()) && !ADMIN.equals(rol))
             throw ApiException.forbidden("SOLO_ADMIN_CREA_ROLES",
                     "Solo un administrador puede crear usuarios con rol " + req.rol());
         long id = service.crear(req);
