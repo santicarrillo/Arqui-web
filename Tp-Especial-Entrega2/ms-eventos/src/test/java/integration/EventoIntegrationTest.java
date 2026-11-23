@@ -350,4 +350,22 @@ class EventoIntegrationTest {
         verify(notificaciones, timeout(2000)).eventoPublicado(eq(id), eq("Evento"), eq("Tandil"), any(),
                 eq(List.of("Divididos")));
     }
+
+    // ---------------------------------------------------------------- GUI: datos del detalle
+
+    @Test
+    void el_detalle_trae_lo_que_muestra_la_web() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        mvc.perform(post("/eventos/" + id + "/participantes").contentType("application/json").content("""
+                [{"nombre":"Divididos","tipo":"BANDA"}]
+                """)).andExpect(status().isOk());
+
+        mvc.perform(get("/eventos/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Evento"))
+                .andExpect(jsonPath("$.tipo").value("RECITAL"))
+                .andExpect(jsonPath("$.ciudad").value("Tandil"))
+                .andExpect(jsonPath("$.lugarId").value(1))
+                .andExpect(jsonPath("$.participantes[0].nombre").value("Divididos"));
+    }
 }

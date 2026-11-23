@@ -184,6 +184,19 @@ services:
       - ms-notificaciones
     networks: [ticketya]
 
+  # ======================= GUI (opcional) =======================
+  # No se levanta con el "docker compose up" de siempre: tiene el perfil "web".
+  #   docker compose --profile web up -d --build     ->  http://localhost:3000
+  # La web corre en el navegador y llama al gateway en localhost:8080 (CORS habilitado para el 3000).
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    profiles: ["web"]
+    ports:
+      - "3000:80"
+    depends_on: [api-gateway]
+    networks: [ticketya]
+
 networks:
   ticketya:
     driver: bridge

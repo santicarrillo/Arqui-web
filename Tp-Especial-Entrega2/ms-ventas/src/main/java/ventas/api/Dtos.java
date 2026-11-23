@@ -31,7 +31,7 @@ public class Dtos {
     }
 
     public record EntradaView(Long entradaId, Long compraId, Long eventoId, Long sectorId, Long asientoId,
-                              BigDecimal precio, String codigoQr, String estado) {
+                              BigDecimal precio, String codigoQr, String estado, String devolucion) {
     }
 
     public record DisponibilidadView(Long eventoId, Long sectorId, boolean numerado, int capacidad,

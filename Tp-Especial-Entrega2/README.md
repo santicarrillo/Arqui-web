@@ -99,6 +99,23 @@ docker compose up -d usuarios-db eventos-db ventas-db lugares-db pagos-db
 
 Rutas públicas: `POST /usuarios/login` y `POST /usuarios` (registro). El resto exige token válido.
 
+## Interfaz web (GUI del cliente)
+
+En `frontend/` hay una web en **React + Vite** con el flujo del cliente: iniciar sesión o registrarse,
+buscar eventos, elegir sector y asientos en el plano, comprar (con fila virtual si el evento la tiene),
+pagar y ver las entradas con su QR. Consume solo el gateway; el gateway tiene CORS habilitado para ella.
+
+```bash
+cd frontend
+npm install
+npm run dev                                     # http://localhost:5173 (requiere Node 20.19+)
+
+# o con Docker, junto con todo el sistema:
+docker compose --profile web up -d --build      # http://localhost:3000
+```
+
+Detalle en `frontend/README.md` y `documentacion/09-gui.md`.
+
 ## Documentación de la API (Swagger)
 
 Cada micro publica su OpenAPI/Swagger UI:
@@ -145,4 +162,6 @@ En `documentacion/`:
 - `05-mongodb-eventos.md` — elección y modelado NoSQL
 - `06-entrega2-fase1.md` — decisiones de diseño de la Entrega 2 (sagas, resiliencia, QR, reportes)
 - `07-pruebas-seguridad.md` — pruebas de seguridad por rol
+- `08-prueba-de-carga.md` — prueba de carga con JMeter y sus resultados
+- `09-gui.md` — interfaz web del cliente: pantallas, endpoints que usa y decisiones
 - `diagramas/` — diagramas (SVG)

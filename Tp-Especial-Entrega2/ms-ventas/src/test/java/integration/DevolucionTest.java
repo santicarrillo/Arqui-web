@@ -29,6 +29,7 @@ import ventas.api.Dtos.CompraRequest;
 import ventas.api.Dtos.CompraView;
 import ventas.client.ClientDtos.PagoInfo;
 import ventas.client.ClientDtos.ReintegroRequest;
+import ventas.repository.VentasRepository;
 import ventas.service.DevolucionService;
 
 /** Devoluciones pedidas por el cliente y cancelacion de eventos, contra PostgreSQL real. */
@@ -40,6 +41,8 @@ class DevolucionTest extends IntegracionBase {
 
     @Autowired
     private DevolucionService devoluciones;
+    @Autowired
+    private VentasRepository ventas;
 
     /** pagos-service conoce un pago APROBADO para cualquier compra: pagar la confirma sin cobrar de nuevo. */
     @BeforeEach
@@ -66,6 +69,33 @@ class DevolucionTest extends IntegracionBase {
     }
 
     // ------------------------------------------------------------ pedido del cliente
+
+    @Test
+    void misEntradasMuestraLaDevolucionPendienteAunqueLaEntradaSigaValida() {
+        long entrada = comprarYPagar(CLIENTE, "d0", pedidoAsiento(ASIENTO));
+        assertEquals(null, ventas.entradasDeCliente(CLIENTE).get(0).devolucion(), "sin pedido no hay devolucion");
+
+        devoluciones.solicitar(CLIENTE, entrada);
+
+        var vista = ventas.entradasDeCliente(CLIENTE).get(0);
+        assertEquals("VALIDA", vista.estado());
+        assertEquals("PENDIENTE", vista.devolucion(), "GET /entradas avisa que ya la pidio");
+    }
+
+    @Test
+    void elAdminVeEventoClienteYMontoDeLaDevolucionPendiente() {
+        long entrada = comprarYPagar(CLIENTE, "d00", pedidoAsiento(ASIENTO));
+        devoluciones.solicitar(CLIENTE, entrada);
+
+        List<DevolucionView> pendientes = devoluciones.listar("ADMINISTRADOR", "PENDIENTE");
+
+        assertEquals(1, pendientes.size());
+        DevolucionView d = pendientes.get(0);
+        assertEquals(entrada, d.entradaId());
+        assertEquals(EVENTO, d.eventoId());
+        assertEquals(CLIENTE, d.clienteId());
+        assertEquals(0, new BigDecimal("30000").compareTo(d.monto()));
+    }
 
     @Test
     void elClienteLaPideYElAdminLaApruebaLaEntradaQuedaDevueltaYElAsientoLibre() {

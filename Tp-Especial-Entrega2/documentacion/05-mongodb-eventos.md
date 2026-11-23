@@ -90,7 +90,8 @@ usando el nombre del servicio como host (`eventos-db:27017`).
 `GET /eventos/{id}` devuelve exactamente el mismo JSON que en la Entrega 1 (`id`, `estado`,
 `fechaHora`, `limitePorCliente`, `sectores[{sectorId, numerado, precio}]`). Ventas no tuvo que
 modificarse; el test de integración de eventos lo verifica. (En la F7 se agregó al final `organizadorId`, que
-ventas usa para los reportes; agregar un campo no rompe a quien no lo lee.)
+ventas usa para los reportes; agregar un campo no rompe a quien no lo lee. Para la GUI se agregaron, también
+al final, `nombre`, `descripcion`, `tipo`, `ciudad`, `lugarId` y `participantes`: ver `09-gui.md`.)
 
 ## Simplificaciones
 

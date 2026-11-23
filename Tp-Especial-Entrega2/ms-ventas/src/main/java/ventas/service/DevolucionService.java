@@ -216,8 +216,13 @@ public class DevolucionService {
         return LocalDateTime.now(clock);
     }
 
+    /** Suma evento, cliente y monto de la entrada: el administrador los necesita para decidir. */
     private DevolucionView vista(Devolucion d) {
+        var entrada = repo.entrada(d.detalleCompraId());
         return new DevolucionView(d.id(), d.detalleCompraId(), d.estado(), d.motivo(),
-                d.fechaSolicitud(), d.adminId(), d.fechaResolucion());
+                d.fechaSolicitud(), d.adminId(), d.fechaResolucion(),
+                entrada.map(DevolucionRepository.EntradaDeCompra::eventoId).orElse(null),
+                entrada.map(DevolucionRepository.EntradaDeCompra::clienteId).orElse(null),
+                entrada.map(DevolucionRepository.EntradaDeCompra::precio).orElse(null));
     }
 }

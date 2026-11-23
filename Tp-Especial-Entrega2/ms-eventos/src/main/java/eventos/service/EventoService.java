@@ -194,8 +194,11 @@ public class EventoService {
         List<Dtos.SectorEventoView> sectores = e.sectores().stream()
                 .map(s -> new Dtos.SectorEventoView(s.sectorId(), s.numerado(), s.precio()))
                 .toList();
+        List<Dtos.ParticipanteView> participantes = e.participantes().stream()
+                .map(p -> new Dtos.ParticipanteView(p.nombre(), p.tipo()))
+                .toList();
         return new Dtos.EventoInfoView(e.id(), e.estado(), e.fechaHora(), e.limitePorCliente(), sectores,
-                e.organizadorId());
+                e.organizadorId(), e.nombre(), e.descripcion(), e.tipo(), e.ciudad(), e.lugarId(), participantes);
     }
 
     private Evento obtenerOErr(long eventoId) {
