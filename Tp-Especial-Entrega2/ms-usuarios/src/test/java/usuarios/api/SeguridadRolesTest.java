@@ -100,6 +100,14 @@ class SeguridadRolesTest {
                 .andExpect(jsonPath("$.error").value("ROL_INVALIDO"));
     }
 
+    @Test
+    void unAltaSinRolDa400YNo500() throws Exception {
+        mvc.perform(post("/usuarios").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Ana\",\"email\":\"ana@a.com\",\"password\":\"1234\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("ROL_INVALIDO"));
+    }
+
     // ---------------------------------------------------------------- GET /usuarios
 
     @ParameterizedTest
