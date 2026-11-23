@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1250" viewBox="0 0 1800 1250" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1800" height="1250" fill="#ffffff"/>
+<defs><marker id="ar" markerWidth="11" markerHeight="11" refX="8.5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2d3f59"/></marker></defs>
+<path d="M700,245 L120,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M750,245 L380,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M820,245 L640,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M900,245 L900,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1050,245 L1420,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1100,245 L1680,360" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M555,410 L465,410" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M725,399 L815,399" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M815,423 L725,423" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M985,410 L1075,410" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M855,460 C855,540 425,540 425,460" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1595,416 L1505,416" fill="none" stroke="#2d3f59" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#ar)"/>
+<path d="M950,460 C1020,520 1340,520 1390,460" fill="none" stroke="#2d3f59" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#ar)"/>
+<path d="M962,460 C1140,580 1510,580 1640,460" fill="none" stroke="#2d3f59" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#ar)"/>
+<path d="M685,460 C960,635 1600,635 1622,460" fill="none" stroke="#2d3f59" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#ar)"/>
+<path d="M120,460 L120,752" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M380,460 L380,752" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M900,460 L900,752" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1160,460 L1160,752" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M640,460 L1040,931" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1420,460 L1220,931" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M1680,460 L1280,947" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<rect x="745" y="32" width="310" height="60" rx="14" fill="#eef2f7" stroke="#475569" stroke-width="2"/>
+<text x="900" y="70" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">Cliente / GUI / Postman</text>
+<path d="M900,92 L900,150" fill="none" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<rect x="650" y="150" width="500" height="94" rx="16" fill="#0f2a52" stroke="#0f2a52" stroke-width="2"/>
+<text x="900" y="184" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">API Gateway :8080</text>
+<text x="900" y="208" text-anchor="middle" font-size="12.5" fill="#dbe4f3">Valida JWT · propaga identidad (X-Usuario-Id / X-Rol)</text>
+<text x="900" y="226" text-anchor="middle" font-size="12.5" fill="#dbe4f3">correlation-id · bitácora</text>
+<rect x="35" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="120" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-usuarios :8081</text>
+<text x="120" y="410" text-anchor="middle" font-size="11" fill="#334155">Login · emite JWT</text>
+<rect x="295" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="380" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-lugares :8084</text>
+<text x="380" y="410" text-anchor="middle" font-size="11" fill="#334155">Lugares · sectores</text>
+<text x="380" y="425" text-anchor="middle" font-size="11" fill="#334155">asientos</text>
+<rect x="555" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="640" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-eventos :8082</text>
+<text x="640" y="410" text-anchor="middle" font-size="11" fill="#334155">Catálogo · publicación</text>
+<text x="640" y="425" text-anchor="middle" font-size="11" fill="#334155">búsqueda · caché</text>
+<rect x="815" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="900" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-ventas :8083</text>
+<text x="900" y="410" text-anchor="middle" font-size="11" fill="#334155">Compra · pago · QR</text>
+<text x="900" y="425" text-anchor="middle" font-size="11" fill="#334155">devol. · reportes · fila</text>
+<rect x="1075" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="1160" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-pagos :8085</text>
+<text x="1160" y="410" text-anchor="middle" font-size="11" fill="#334155">Pasarela de pagos</text>
+<text x="1160" y="425" text-anchor="middle" font-size="11" fill="#334155">(simulada)</text>
+<rect x="1335" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="1420" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-preferencias :8086</text>
+<text x="1420" y="410" text-anchor="middle" font-size="11" fill="#334155">Preferencias y</text>
+<text x="1420" y="425" text-anchor="middle" font-size="11" fill="#334155">recomendaciones</text>
+<rect x="1595" y="360" width="170" height="100" rx="12" fill="#cfe0fb" stroke="#2f5fd0" stroke-width="2"/>
+<text x="1680" y="388" text-anchor="middle" font-size="12.5" font-weight="700" fill="#10243f">ms-notificaciones :8087</text>
+<text x="1680" y="410" text-anchor="middle" font-size="11" fill="#334155">Avisos asíncronos</text>
+<path d="M45.0,773.0 a75.0,12 0 0 1 150,0 v54 a75.0,12 0 0 1 -150,0 z" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<ellipse cx="120" cy="773.0" rx="75.0" ry="12" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<text x="120" y="800" text-anchor="middle" font-size="13" font-weight="700" fill="#8a4b12">PostgreSQL</text>
+<text x="120" y="818" text-anchor="middle" font-size="11.5" fill="#8a4b12">usuarios</text>
+<path d="M305.0,773.0 a75.0,12 0 0 1 150,0 v54 a75.0,12 0 0 1 -150,0 z" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<ellipse cx="380" cy="773.0" rx="75.0" ry="12" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<text x="380" y="800" text-anchor="middle" font-size="13" font-weight="700" fill="#8a4b12">PostgreSQL</text>
+<text x="380" y="818" text-anchor="middle" font-size="11.5" fill="#8a4b12">lugares</text>
+<path d="M825.0,773.0 a75.0,12 0 0 1 150,0 v54 a75.0,12 0 0 1 -150,0 z" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<ellipse cx="900" cy="773.0" rx="75.0" ry="12" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<text x="900" y="800" text-anchor="middle" font-size="13" font-weight="700" fill="#8a4b12">PostgreSQL</text>
+<text x="900" y="818" text-anchor="middle" font-size="11.5" fill="#8a4b12">ventas</text>
+<path d="M1085.0,773.0 a75.0,12 0 0 1 150,0 v54 a75.0,12 0 0 1 -150,0 z" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<ellipse cx="1160" cy="773.0" rx="75.0" ry="12" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<text x="1160" y="800" text-anchor="middle" font-size="13" font-weight="700" fill="#8a4b12">PostgreSQL</text>
+<text x="1160" y="818" text-anchor="middle" font-size="11.5" fill="#8a4b12">pagos</text>
+<path d="M1005.0,949.0 a155.0,12 0 0 1 310,0 v72 a155.0,12 0 0 1 -310,0 z" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<ellipse cx="1160" cy="949.0" rx="155.0" ry="12" fill="#ffe3c2" stroke="#e08a3c" stroke-width="2"/>
+<text x="1160" y="985" text-anchor="middle" font-size="13" font-weight="700" fill="#8a4b12">MongoDB</text>
+<text x="1160" y="1003" text-anchor="middle" font-size="11.5" fill="#8a4b12">Eventos · Preferencias · Notificaciones</text>
+<rect x="479" y="378" width="61" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="510.0" y="392" text-anchor="middle" font-size="11" fill="#334155">sectores</text>
+<rect x="752" y="370" width="37" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="770.0" y="384" text-anchor="middle" font-size="11" fill="#334155">saga</text>
+<rect x="746" y="434" width="49" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="770.0" y="448" text-anchor="middle" font-size="11" fill="#334155">estado</text>
+<rect x="978" y="378" width="104" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="1030.0" y="392" text-anchor="middle" font-size="11" fill="#334155">cobro/reintegro</text>
+<rect x="1510" y="384" width="80" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="1550.0" y="398" text-anchor="middle" font-size="11" fill="#334155">interesados</text>
+<rect x="609" y="532" width="61" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="640.0" y="546" text-anchor="middle" font-size="11" fill="#334155">asientos</text>
+<rect x="1281" y="600" width="98" height="19" rx="4" fill="#ffffff" opacity="0.96"/>
+<text x="1330.0" y="614" text-anchor="middle" font-size="11" fill="#334155">avisos (async)</text>
+<rect x="100" y="1132" width="1600" height="66" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<rect x="230" y="1154" width="26" height="22" rx="4" fill="#0f2a52" stroke="#0f2a52"/>
+<text x="264" y="1170" font-size="13.5" fill="#334155">API Gateway</text>
+<rect x="470" y="1154" width="26" height="22" rx="4" fill="#cfe0fb" stroke="#2f5fd0"/>
+<text x="504" y="1170" font-size="13.5" fill="#334155">Microservicio</text>
+<path d="M720,1156 a13,6 0 0 1 26,0 v12 a13,6 0 0 1 -26,0 z" fill="#ffe3c2" stroke="#e08a3c"/>
+<ellipse cx="733" cy="1156" rx="13" ry="6" fill="#ffe3c2" stroke="#e08a3c"/>
+<text x="760" y="1170" font-size="13.5" fill="#334155">Base de datos</text>
+<line x1="970" y1="1165" x2="1012" y2="1165" stroke="#2d3f59" stroke-width="2" marker-end="url(#ar)"/>
+<text x="1024" y="1170" font-size="13.5" fill="#334155">Llamada síncrona</text>
+<line x1="1240" y1="1165" x2="1282" y2="1165" stroke="#2d3f59" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#ar)"/>
+<text x="1294" y="1170" font-size="13.5" fill="#334155">Comunicación asíncrona</text>
+</svg>
