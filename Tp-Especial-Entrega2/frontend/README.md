@@ -32,18 +32,20 @@ lo hace en las carpetas 1 a 4.
 
 ### Usuarios de prueba
 
-Las carpetas 1 y 2 de esa colección crean estos usuarios (todos con contraseña `1234`):
+Todos con contraseña `1234`. El administrador ya viene cargado (ms-usuarios lo crea al arrancar); los demás los
+crean las carpetas 1 y 2 de esa colección:
 
-| Rol | Email | Para qué sirve |
-|---|---|---|
-| CLIENTE | `cli@a.com` | **El que se usa en la web**: busca eventos, compra y ve sus entradas. |
-| ORGANIZADOR | `orga@a.com` | Crea y publica eventos (por Postman/Swagger). |
-| ADMINISTRADOR | `admin@a.com` | **En la web**: pantalla "Devoluciones" para aprobar o rechazar los pedidos. Lugares y sectores, por Postman/Swagger. |
-| ACCESO | `acc@a.com` | Valida los QR en la puerta (por Postman/Swagger). |
+| Rol | Email | Cómo se crea | Para qué sirve |
+|---|---|---|---|
+| ADMINISTRADOR | `admin@a.com` | **Precargado** al arrancar ms-usuarios (`ADMIN_EMAIL` / `ADMIN_PASSWORD`) | **En la web**: pantalla "Devoluciones" para aprobar o rechazar los pedidos. Crea organizadores y personal de acceso, lugares y sectores (por Postman/Swagger). |
+| ORGANIZADOR | `orga@a.com` | Lo crea el admin, con su token | Crea y publica sus eventos (por Postman/Swagger). |
+| ACCESO | `acc@a.com` | Lo crea el admin, con su token | Valida los QR en la puerta (por Postman/Swagger). |
+| CLIENTE | `cli@a.com` | Registro público | **El que se usa en la web**: busca eventos, compra y ve sus entradas. |
 
 La web es para clientes, más la pantalla de devoluciones del administrador: con ORGANIZADOR o ACCESO se puede
-iniciar sesión, pero muestra un aviso. También se
-puede crear una cuenta nueva desde "Crear cuenta", que siempre queda como CLIENTE.
+iniciar sesión y ver los eventos, pero no comprar (el backend responde `403 SOLO_CLIENTES`) y la web lo avisa.
+También se puede crear una cuenta nueva desde "Crear cuenta", que siempre queda como CLIENTE: el registro
+público no permite otro rol.
 
 Después de las carpetas 3 y 4 queda publicado "Recital de Prueba" (Tandil, sector Campo sin numerar, 100
 lugares a $15.000), listo para comprar desde la web.
