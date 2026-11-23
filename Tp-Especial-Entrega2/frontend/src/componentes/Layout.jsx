@@ -25,7 +25,7 @@ export default function Layout({ children }) {
       )}
       {sesion.rol !== 'CLIENTE' && sesion.rol !== 'ADMINISTRADOR' && (
         <p className="aviso-rol">
-          Entraste con el rol {sesion.rol}. Esta web está pensada para clientes: si comprás, la compra queda a tu nombre.
+          Entraste con el rol {sesion.rol}. Esta web es para clientes: podés ver los eventos, pero no comprar.
         </p>
       )}
       <main className="contenido">{children}</main>
