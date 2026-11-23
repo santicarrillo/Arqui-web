@@ -1,13 +1,20 @@
-# docker-compose GENERAL del sistema TicketYa (Entrega 1).
-# Levanta SOLO las bases (una por microservicio). Los microservicios se corren
-# localmente desde el IDE (Entrega 1: "ejecucion local de los micros, bases con Docker").
-# Cada base usa el nombre/usuario/clave/puerto que espera el application.yml de su micro.
-# Cuatro son PostgreSQL; eventos es MongoDB.
+# docker-compose GENERAL del sistema TicketYa (Entrega 2).
+# Levanta TODO en contenedores separados: 5 bases + 8 microservicios + API Gateway,
+# conectados por una red interna. Cada micro se comunica con los demas por su nombre
+# de servicio (ej: http://ms-eventos:8082), no por localhost.
 #
-# Uso:  docker compose up -d        (levanta las 5 bases)
-#       docker compose down         (las baja)
+# Requisito previo: compilar los jars una sola vez (los Dockerfile copian target/*.jar):
+#   mvn clean package -DskipTests            (en esta carpeta; compila los 8 modulos)
+# Luego:
+#   docker compose up -d --build             (construye imagenes y levanta todo)
+#   docker compose down                      (baja todo)
+#
+# Punto de entrada unico: http://localhost:8080 (api-gateway).
+
+name: ticketya
 
 services:
+  # ======================= BASES DE DATOS =======================
   usuarios-db:
     image: postgres:16
     container_name: usuarios-db
@@ -17,9 +24,9 @@ services:
       POSTGRES_PASSWORD: usuarios
     ports:
       - "5437:5432"
+    networks: [ticketya]
 
-  # eventos usa MongoDB (base documental) con usuario y contrasena: ver documentacion/05-mongodb-eventos.md
-  # Entrega 2: preferencias (F9) y notificaciones (F8) usan este mismo servidor, cada uno con su propia base.
+  # MongoDB: lo usan eventos (F4), preferencias (F9) y notificaciones (F8), cada uno con su propia base.
   eventos-db:
     image: mongo:7.0.11
     container_name: eventos-db
@@ -27,9 +34,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: eventos
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
+    networks: [ticketya]
 
   ventas-db:
     image: postgres:16
@@ -40,6 +47,7 @@ services:
       POSTGRES_PASSWORD: ventas
     ports:
       - "5433:5432"
+    networks: [ticketya]
 
   lugares-db:
     image: postgres:16
@@ -50,6 +58,7 @@ services:
       POSTGRES_PASSWORD: lugares
     ports:
       - "5435:5432"
+    networks: [ticketya]
 
   pagos-db:
     image: postgres:16
@@ -60,3 +69,121 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5436:5432"
+    networks: [ticketya]
+
+  # ======================= MICROSERVICIOS =======================
+  ms-usuarios:
+    build: ./ms-usuarios
+    container_name: ms-usuarios
+    environment:
+      USUARIOS_DB_URL: jdbc:postgresql://usuarios-db:5432/usuarios
+      USUARIOS_DB_USER: usuarios
+      USUARIOS_DB_PASSWORD: usuarios
+      JWT_SECRET: clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes
+    ports:
+      - "8081:8081"
+    depends_on: [usuarios-db]
+    networks: [ticketya]
+
+  ms-lugares:
+    build: ./ms-lugares
+    container_name: ms-lugares
+    environment:
+      LUGARES_DB_URL: jdbc:postgresql://lugares-db:5432/lugares
+      LUGARES_DB_USER: lugares
+      LUGARES_DB_PASSWORD: lugares
+    ports:
+      - "8084:8084"
+    depends_on: [lugares-db]
+    networks: [ticketya]
+
+  ms-eventos:
+    build: ./ms-eventos
+    container_name: ms-eventos
+    environment:
+      EVENTOS_MONGO_URI: mongodb://root:password@eventos-db:27017/eventos?authSource=admin
+      LUGARES_URL: http://ms-lugares:8084
+      VENTAS_URL: http://ms-ventas:8083
+      NOTIFICACIONES_URL: http://ms-notificaciones:8087
+    ports:
+      - "8082:8082"
+    depends_on: [eventos-db]
+    networks: [ticketya]
+
+  ms-pagos:
+    build: ./ms-pagos
+    container_name: ms-pagos
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pagos-db:5432/pagos_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8085:8085"
+    depends_on: [pagos-db]
+    networks: [ticketya]
+
+  ms-ventas:
+    build: ./ms-ventas
+    container_name: ms-ventas
+    environment:
+      VENTAS_DB_URL: jdbc:postgresql://ventas-db:5432/ventas
+      VENTAS_DB_USER: ventas
+      VENTAS_DB_PASSWORD: ventas
+      EVENTOS_URL: http://ms-eventos:8082
+      LUGARES_URL: http://ms-lugares:8084
+      PAGOS_URL: http://ms-pagos:8085
+      PREFERENCIAS_URL: http://ms-preferencias:8086
+      NOTIFICACIONES_URL: http://ms-notificaciones:8087
+    ports:
+      - "8083:8083"
+    depends_on: [ventas-db]
+    networks: [ticketya]
+
+  ms-preferencias:
+    build: ./ms-preferencias
+    container_name: ms-preferencias
+    environment:
+      PREFERENCIAS_MONGO_URI: mongodb://root:password@eventos-db:27017/preferencias?authSource=admin
+      EVENTOS_URL: http://ms-eventos:8082
+    ports:
+      - "8086:8086"
+    depends_on: [eventos-db]
+    networks: [ticketya]
+
+  ms-notificaciones:
+    build: ./ms-notificaciones
+    container_name: ms-notificaciones
+    environment:
+      NOTIFICACIONES_MONGO_URI: mongodb://root:password@eventos-db:27017/notificaciones?authSource=admin
+      PREFERENCIAS_URL: http://ms-preferencias:8086
+    ports:
+      - "8087:8087"
+    depends_on: [eventos-db]
+    networks: [ticketya]
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      USUARIOS_URL: http://ms-usuarios:8081
+      EVENTOS_URL: http://ms-eventos:8082
+      VENTAS_URL: http://ms-ventas:8083
+      LUGARES_URL: http://ms-lugares:8084
+      PREFERENCIAS_URL: http://ms-preferencias:8086
+      NOTIFICACIONES_URL: http://ms-notificaciones:8087
+      JWT_SECRET: clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ms-usuarios
+      - ms-eventos
+      - ms-ventas
+      - ms-lugares
+      - ms-pagos
+      - ms-preferencias
+      - ms-notificaciones
+    networks: [ticketya]
+
+networks:
+  ticketya:
+    driver: bridge
