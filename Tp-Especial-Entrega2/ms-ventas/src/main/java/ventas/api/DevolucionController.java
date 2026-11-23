@@ -33,7 +33,9 @@ public class DevolucionController {
             + "409 si esta fuera de plazo o ya tiene una devolucion en curso.")
     @PostMapping("/entradas/{id}/devolucion")
     public ResponseEntity<DevolucionView> solicitar(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                                    @RequestHeader("X-Rol") String rol,
                                                     @PathVariable("id") long id) {
+        Roles.exigirCliente(rol);
         return ResponseEntity.status(HttpStatus.CREATED).body(devoluciones.solicitar(usuarioId, id));
     }
 

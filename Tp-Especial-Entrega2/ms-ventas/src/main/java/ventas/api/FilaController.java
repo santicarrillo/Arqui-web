@@ -50,13 +50,17 @@ public class FilaController {
 
     @Operation(summary = "Saca un turno (o devuelve el que ya tengo). 409 SIN_FILA si el evento no tiene fila activa.")
     @PostMapping("/turno")
-    public TurnoView tomarTurno(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable("eventoId") long eventoId) {
+    public TurnoView tomarTurno(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol,
+                                @PathVariable("eventoId") long eventoId) {
+        Roles.exigirCliente(rol);
         return filas.tomarTurno(usuarioId, eventoId);
     }
 
     @Operation(summary = "Mi turno: cuantas personas hay antes, o hasta cuando puedo comprar.")
     @GetMapping("/turno")
-    public TurnoView turno(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable("eventoId") long eventoId) {
+    public TurnoView turno(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol,
+                           @PathVariable("eventoId") long eventoId) {
+        Roles.exigirCliente(rol);
         return filas.turno(usuarioId, eventoId);
     }
 }

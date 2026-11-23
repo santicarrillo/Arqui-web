@@ -48,11 +48,11 @@ class FilaVirtualTest extends IntegracionBase {
     }
 
     private ResponseEntity<CompraView> comprarZona(long cliente, String clave) {
-        return compraController.crear(cliente, clave, pedidoZona(1));
+        return compraController.crear(cliente, "CLIENTE", clave, pedidoZona(1));
     }
 
     private ResponseEntity<CompraView> comprarAsiento(long cliente, String clave, long asiento) {
-        return compraController.crear(cliente, clave, pedidoAsiento(asiento));
+        return compraController.crear(cliente, "CLIENTE", clave, pedidoAsiento(asiento));
     }
 
     private String errorAlComprar(long cliente) {
