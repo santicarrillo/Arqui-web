@@ -1,6 +1,7 @@
 package lugares.api;
 
 
+import lugares.Domains.ApiException;
 import lugares.service.LugaresService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * F1: dar de alta lugares y sectores es del ADMINISTRADOR o del ORGANIZADOR (el rol lo manda el gateway en
+ * X-Rol). Las consultas quedan abiertas: eventos y ventas las llaman directo, sin pasar por el gateway.
+ */
 @RestController
 @RequestMapping("/lugares")
 public class LugaresController {
@@ -19,7 +24,9 @@ public class LugaresController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Long>> crearLugar(@RequestBody Dtos.CrearLugarRequest req){
+    public ResponseEntity<Map<String, Long>> crearLugar(@RequestHeader(value = "X-Rol", required = false) String rol,
+                                                        @RequestBody Dtos.CrearLugarRequest req){
+        exigirAdminUOrganizador(rol);
         Long id = service.crearLugar(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", id));
     }
@@ -30,7 +37,9 @@ public class LugaresController {
     }
 
     @PostMapping("/{id}/sectores")
-    public ResponseEntity<Map<String, Long>> crearSector(@RequestBody Dtos.CrearSectorRequest req,@PathVariable Long id){
+    public ResponseEntity<Map<String, Long>> crearSector(@RequestHeader(value = "X-Rol", required = false) String rol,
+                                                         @RequestBody Dtos.CrearSectorRequest req,@PathVariable Long id){
+        exigirAdminUOrganizador(rol);
         Long idSector = service.crearSector(id,req);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",idSector));
     }
@@ -38,5 +47,12 @@ public class LugaresController {
     @GetMapping("/{id}/sectores")
     public ResponseEntity<List<Dtos.SectorView>> listarSectoresPorLugar(@PathVariable Long id){
         return ResponseEntity.ok(service.listarSectoresPorLugar(id));
+    }
+
+    private static void exigirAdminUOrganizador(String rol) {
+        if (!"ADMINISTRADOR".equals(rol) && !"ORGANIZADOR".equals(rol)) {
+            throw ApiException.forbidden("SOLO_ADMIN_U_ORGANIZADOR",
+                    "Solo un administrador o un organizador puede dar de alta lugares y sectores");
+        }
     }
 }
