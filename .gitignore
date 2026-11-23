@@ -6,3 +6,7 @@ target/
 Claude outputs/
 
 *.iml
+
+# archivos locales de la app de Postman (no van al repo)
+/.postman/
+/postman/
