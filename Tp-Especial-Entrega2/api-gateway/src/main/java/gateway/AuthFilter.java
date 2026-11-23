@@ -53,16 +53,21 @@ public class AuthFilter implements GlobalFilter, Ordered {
                 ? UUID.randomUUID().toString().substring(0, 8) : entrante;
         exchange.getResponse().getHeaders().set(H_CORRELATION, corr);
 
+        String auth = request.getHeaders().getFirst("Authorization");
+        boolean conToken = auth != null && auth.startsWith("Bearer ");
+
         // Rutas publicas: preflight CORS, login y alta de usuario (registro inicial).
-        if (esPublica(metodo, ruta)) {
+        // F1: el alta con token es la de un administrador creando otros roles, asi que ese token se valida
+        // y se propaga la identidad como en cualquier ruta protegida (ms-usuarios decide segun X-Rol).
+        boolean altaConToken = esAltaDeUsuario(metodo, ruta) && conToken;
+        if (esPublica(metodo, ruta) && !altaConToken) {
             ServerHttpRequest publica = request.mutate()
                     .headers(h -> { h.remove(H_USUARIO); h.remove(H_ROL); h.set(H_CORRELATION, corr); })
                     .build();
             return chain.filter(exchange.mutate().request(publica).build());
         }
 
-        String auth = request.getHeaders().getFirst("Authorization");
-        if (auth == null || !auth.startsWith("Bearer ")) {
+        if (!conToken) {
             return rechazar(exchange, corr, metodo, ruta, "FALTA_TOKEN");
         }
 
@@ -91,8 +96,12 @@ public class AuthFilter implements GlobalFilter, Ordered {
     private boolean esPublica(String metodo, String ruta) {
         if ("OPTIONS".equals(metodo)) return true;                       // preflight CORS
         if ("POST".equals(metodo) && ruta.equals("/usuarios/login")) return true;
-        if ("POST".equals(metodo) && ruta.equals("/usuarios")) return true; // registro
+        if (esAltaDeUsuario(metodo, ruta)) return true;                  // registro
         return false;
+    }
+
+    private boolean esAltaDeUsuario(String metodo, String ruta) {
+        return "POST".equals(metodo) && ruta.equals("/usuarios");
     }
 
     private Mono<Void> rechazar(ServerWebExchange exchange, String corr, String metodo, String ruta, String motivo) {
