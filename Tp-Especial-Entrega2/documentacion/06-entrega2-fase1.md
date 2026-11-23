@@ -327,9 +327,10 @@ compartida (por ejemplo Redis) y avisos por WebSocket.
   - notificaciones: `NOTIFICACIONES_MONGO_URI=mongodb://root:password@eventos-db:27017/notificaciones?authSource=admin`, `PREFERENCIAS_URL`;
   - gateway: `PREFERENCIAS_URL`, `NOTIFICACIONES_URL` (además de los que ya tenía).
   Publicar solo el puerto del gateway; los `/interno/**` no tienen ruta en el gateway.
-- **F1 (seguridad):** falta la autorización por rol en el gateway y que el registro no permita crear un
-  ADMINISTRADOR. Los servicios ya controlan el rol donde importa (reportes, fila, ingresos, devoluciones,
-  preferencias).
+- **F1 (seguridad): cerrada.** El registro público solo crea clientes; el ADMINISTRADOR inicial se carga al
+  arrancar ms-usuarios (`ADMIN_EMAIL` / `ADMIN_PASSWORD`) y crea los demás roles con su token. Cada servicio
+  controla el rol en sus endpoints (usuarios, eventos con dueño del evento, lugares, compras y entradas solo de
+  clientes). Matriz y tests en `07-pruebas-seguridad.md`.
 - **F3** sigue pendiente.
 - **Postman (F14):** todas las rutas necesitan token. El paso manual de `/interno/disponibilidad` ya no hace
   falta: publicar el evento la prepara sola (F12).

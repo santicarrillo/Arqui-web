@@ -223,6 +223,50 @@ class AuthFilterTest {
         assertEquals(0, llamadasDownstream.get());
     }
 
+    // ---------------------------------------------------------------- F1: alta de usuarios con token
+
+    @Test
+    void registroConTokenDeAdminPropagaSuIdentidad() {
+        String adminJwt = token(1L, "ADMINISTRADOR", KEY, 60_000);
+
+        web.post().uri("/usuarios")
+                .header("Authorization", "Bearer " + adminJwt)
+                .header("X-Usuario-Id", "999")
+                .header("X-Rol", "CLIENTE")
+                .exchange()
+                .expectStatus().isOk();
+
+        assertEquals(1, llamadasDownstream.get());
+        assertEquals("/usuarios", ultimaRutaDownstream.get());
+        assertEquals("1", ultimoUsuarioHeader.get());
+        assertEquals("ADMINISTRADOR", ultimoRolHeader.get());
+    }
+
+    @Test
+    void registroConTokenInvalidoDevuelve401YNoLlegaAlMicro() {
+        String jwtAjeno = token(1L, "ADMINISTRADOR", OTRA_KEY, 60_000);
+
+        web.post().uri("/usuarios")
+                .header("Authorization", "Bearer " + jwtAjeno)
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectHeader().valueEquals("X-Auth-Error", "TOKEN_INVALIDO");
+
+        assertEquals(0, llamadasDownstream.get());
+    }
+
+    @Test
+    void registroSinTokenConRolFalsificadoLoLimpia() {
+        web.post().uri("/usuarios")
+                .header("X-Rol", "ADMINISTRADOR")
+                .exchange()
+                .expectStatus().isOk();
+
+        assertEquals(1, llamadasDownstream.get());
+        assertNull(ultimoUsuarioHeader.get());
+        assertNull(ultimoRolHeader.get(), "sin token el X-Rol falsificado no llega a ms-usuarios");
+    }
+
     @ParameterizedTest
     @CsvSource({
             "10, CLIENTE, /compras",

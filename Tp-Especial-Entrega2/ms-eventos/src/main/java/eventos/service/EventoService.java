@@ -34,11 +34,18 @@ import java.util.stream.Collectors;
  *
  * Cache (F5): el detalle (lo que lee ventas en cada compra) y la busqueda se guardan en memoria
  * (CacheConfig). Todo metodo que cambia un evento borra su detalle y todas las busquedas.
+ *
+ * Roles (F1): crear y cambiar eventos es del ORGANIZADOR (solo los suyos) o del ADMINISTRADOR. El usuario y el
+ * rol vienen del gateway (X-Usuario-Id / X-Rol) y van al final de cada metodo: las claves de cache usan #p0.
+ * Las lecturas no piden rol: ventas y preferencias las llaman directo, sin pasar por el gateway.
  */
 @Service
 public class EventoService {
 
     private static final Logger log = LoggerFactory.getLogger(EventoService.class);
+
+    private static final String ORGANIZADOR = "ORGANIZADOR";
+    private static final String ADMINISTRADOR = "ADMINISTRADOR";
 
     private final EventoRepository repo;
     private final LugaresClient lugares;
@@ -53,7 +60,13 @@ public class EventoService {
         this.publicador = publicador;
     }
 
-    public long crear(Dtos.CrearEventoRequest r) {
+    public long crear(Dtos.CrearEventoRequest r, long usuarioId, String rol) {
+        exigirOrganizador(rol);
+        if (ORGANIZADOR.equals(rol)) {
+            // un organizador siempre crea eventos a su nombre, diga lo que diga el pedido
+            r = new Dtos.CrearEventoRequest(r.nombre(), r.descripcion(), r.tipo(), r.fechaHora(), r.lugarId(),
+                    r.ciudad(), usuarioId, r.limitePorCliente());
+        }
         if (r.nombre() == null || r.nombre().isBlank())
             throw ApiException.badRequest("DATOS_INVALIDOS", "El nombre es obligatorio");
         if (r.tipo() == null || r.fechaHora() == null || r.lugarId() == null || r.organizadorId() == null)
@@ -65,8 +78,8 @@ public class EventoService {
     @Caching(evict = {
             @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
             @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
-    public void configurarSectores(long eventoId, List<Dtos.SectorPrecioRequest> sectores) {
-        Evento e = obtenerOErr(eventoId);
+    public void configurarSectores(long eventoId, List<Dtos.SectorPrecioRequest> sectores, long usuarioId, String rol) {
+        Evento e = obtenerPropio(eventoId, usuarioId, rol);
         if (!"BORRADOR".equals(e.estado()))
             throw ApiException.conflict("ESTADO_INVALIDO", "Solo se configuran precios en estado BORRADOR");
         for (Dtos.SectorPrecioRequest s : sectores) {
@@ -82,8 +95,9 @@ public class EventoService {
     @Caching(evict = {
             @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
             @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
-    public void agregarParticipantes(long eventoId, List<Dtos.ParticipanteRequest> participantes) {
-        obtenerOErr(eventoId);
+    public void agregarParticipantes(long eventoId, List<Dtos.ParticipanteRequest> participantes,
+                                     long usuarioId, String rol) {
+        obtenerPropio(eventoId, usuarioId, rol);
         if (participantes.isEmpty()) return;
         repo.agregarParticipantes(eventoId, participantes.stream()
                 .map(p -> new Participante(p.nombre(), p.tipo()))
@@ -104,8 +118,8 @@ public class EventoService {
     @Caching(evict = {
             @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
             @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
-    public void publicar(long eventoId) {
-        Evento e = obtenerOErr(eventoId);
+    public void publicar(long eventoId, long usuarioId, String rol) {
+        Evento e = obtenerPropio(eventoId, usuarioId, rol);
         if (!"BORRADOR".equals(e.estado()))
             throw ApiException.conflict("ESTADO_INVALIDO", "Solo se publica un evento en BORRADOR");
         if (e.sectores().isEmpty())
@@ -146,8 +160,8 @@ public class EventoService {
     @Caching(evict = {
             @CacheEvict(cacheNames = CacheConfig.DETALLE, key = "#p0"),
             @CacheEvict(cacheNames = CacheConfig.BUSQUEDAS, allEntries = true)})
-    public Dtos.CancelacionView cancelar(long eventoId, String motivo) {
-        Evento e = obtenerOErr(eventoId);
+    public Dtos.CancelacionView cancelar(long eventoId, String motivo, long usuarioId, String rol) {
+        Evento e = obtenerPropio(eventoId, usuarioId, rol);
         if ("CANCELADO".equals(e.estado()) || !repo.cancelar(eventoId, motivo))
             throw ApiException.conflict("ESTADO_INVALIDO", "El evento ya está cancelado");
         boolean avisado = avisarCancelacionAVentas(eventoId);
@@ -205,5 +219,22 @@ public class EventoService {
         return repo.buscarPorId(eventoId)
                 .orElseThrow(() -> ApiException.notFound("EVENTO_NO_ENCONTRADO",
                         "El evento " + eventoId + " no existe"));
+    }
+
+    // ---------------------------------------------------------------- roles (F1)
+
+    private static void exigirOrganizador(String rol) {
+        if (!ORGANIZADOR.equals(rol) && !ADMINISTRADOR.equals(rol))
+            throw ApiException.forbidden("SOLO_ORGANIZADOR",
+                    "Solo un organizador o un administrador puede crear o modificar eventos");
+    }
+
+    /** El evento, si quien lo pide es su organizador o un administrador. */
+    private Evento obtenerPropio(long eventoId, long usuarioId, String rol) {
+        exigirOrganizador(rol);
+        Evento e = obtenerOErr(eventoId);
+        if (ORGANIZADOR.equals(rol) && (e.organizadorId() == null || e.organizadorId() != usuarioId))
+            throw ApiException.forbidden("NO_ES_TU_EVENTO", "Solo podes modificar tus propios eventos");
+        return e;
     }
 }

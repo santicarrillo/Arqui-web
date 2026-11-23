@@ -21,34 +21,44 @@ public class EventoController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Long>> crear(@RequestBody Dtos.CrearEventoRequest req) {
-        long id = service.crear(req);
+    public ResponseEntity<Map<String, Long>> crear(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                                   @RequestHeader("X-Rol") String rol,
+                                                   @RequestBody Dtos.CrearEventoRequest req) {
+        long id = service.crear(req, usuarioId, rol);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", id));
     }
 
     @PostMapping("/{id}/sectores")
-    public ResponseEntity<Void> configurarSectores(@PathVariable long id,
+    public ResponseEntity<Void> configurarSectores(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                                   @RequestHeader("X-Rol") String rol,
+                                                   @PathVariable long id,
                                                    @RequestBody List<Dtos.SectorPrecioRequest> sectores) {
-        service.configurarSectores(id, sectores);
+        service.configurarSectores(id, sectores, usuarioId, rol);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/participantes")
-    public ResponseEntity<Void> participantes(@PathVariable long id,
+    public ResponseEntity<Void> participantes(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                              @RequestHeader("X-Rol") String rol,
+                                              @PathVariable long id,
                                               @RequestBody List<Dtos.ParticipanteRequest> participantes) {
-        service.agregarParticipantes(id, participantes);
+        service.agregarParticipantes(id, participantes, usuarioId, rol);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/publicacion")
-    public ResponseEntity<Void> publicar(@PathVariable long id) {
-        service.publicar(id);
+    public ResponseEntity<Void> publicar(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                         @RequestHeader("X-Rol") String rol,
+                                         @PathVariable long id) {
+        service.publicar(id, usuarioId, rol);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/cancelacion")
-    public Dtos.CancelacionView cancelar(@PathVariable long id, @RequestBody Dtos.CancelacionRequest req) {
-        return service.cancelar(id, req.motivo());
+    public Dtos.CancelacionView cancelar(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                         @RequestHeader("X-Rol") String rol,
+                                         @PathVariable long id, @RequestBody Dtos.CancelacionRequest req) {
+        return service.cancelar(id, req.motivo(), usuarioId, rol);
     }
 
     // busqueda por multiples criterios (todos opcionales)

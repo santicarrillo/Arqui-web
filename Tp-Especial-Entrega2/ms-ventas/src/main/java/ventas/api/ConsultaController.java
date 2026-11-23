@@ -33,14 +33,17 @@ public class ConsultaController {
     @Tag(name = "Entradas")
     @Operation(summary = "Entradas pagadas del usuario que viene en X-Usuario-Id")
     @GetMapping("/entradas")
-    public List<Dtos.EntradaView> entradas(@RequestHeader("X-Usuario-Id") long usuarioId) {
+    public List<Dtos.EntradaView> entradas(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol) {
+        Roles.exigirCliente(rol);
         return repo.entradasDeCliente(usuarioId);
     }
 
     @Tag(name = "Entradas")
     @Operation(summary = "Una entrada del usuario, con su codigo QR")
     @GetMapping("/entradas/{id}")
-    public Dtos.EntradaView entrada(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable("id") long id) {
+    public Dtos.EntradaView entrada(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol,
+                                    @PathVariable("id") long id) {
+        Roles.exigirCliente(rol);
         return repo.entradaDeCliente(id, usuarioId).orElseThrow(() ->
                 ApiException.notFound("ENTRADA_NO_ENCONTRADA", "La entrada " + id + " no existe"));
     }

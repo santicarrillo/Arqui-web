@@ -26,8 +26,10 @@ public class CompraController {
             + "activa, hace falta un turno habilitado (409 TURNO_REQUERIDO / TURNO_EN_ESPERA / TURNO_VENCIDO).")
     @PostMapping
     public ResponseEntity<Dtos.CompraView> crear(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                                 @RequestHeader("X-Rol") String rol,
                                                  @RequestHeader("Idempotency-Key") String clave,
                                                  @Valid @RequestBody Dtos.CompraRequest pedido) {
+        Roles.exigirCliente(rol);
         // F10: con fila virtual activa, solo compra quien tiene el turno habilitado
         filas.exigirTurno(usuarioId, pedido.eventoId());
         CompraService.CompraCreada creada = compras.crear(usuarioId, clave, pedido);
@@ -41,8 +43,10 @@ public class CompraController {
             + "409 si la reserva vencio.")
     @PostMapping("/{id}/pagar")
     public ResponseEntity<Object> pagar(@RequestHeader("X-Usuario-Id") long usuarioId,
+                                        @RequestHeader("X-Rol") String rol,
                                         @PathVariable("id") long id,
                                         @Valid @RequestBody Dtos.PagoRequest pedido) {
+        Roles.exigirCliente(rol);
         CompraService.ResultadoPago resultado = compras.pagar(usuarioId, id, pedido.medioPago());
         return switch (resultado.resultado()) {
             case PAGADA -> ResponseEntity.ok().<Object>body(resultado.compra());
@@ -57,13 +61,17 @@ public class CompraController {
 
     @Operation(summary = "Consulta una compra del usuario")
     @GetMapping("/{id}")
-    public Dtos.CompraView obtener(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable("id") long id) {
+    public Dtos.CompraView obtener(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol,
+                                   @PathVariable("id") long id) {
+        Roles.exigirCliente(rol);
         return compras.obtener(usuarioId, id);
     }
 
     @Operation(summary = "Cancela una compra pendiente y libera los lugares")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelar(@RequestHeader("X-Usuario-Id") long usuarioId, @PathVariable("id") long id) {
+    public ResponseEntity<Void> cancelar(@RequestHeader("X-Usuario-Id") long usuarioId, @RequestHeader("X-Rol") String rol,
+                                         @PathVariable("id") long id) {
+        Roles.exigirCliente(rol);
         compras.cancelar(usuarioId, id);
         return ResponseEntity.noContent().build();
     }

@@ -1,196 +1,15 @@
 {
   "info": {
     "name": "TicketYa - Entrega 2 (JWT, flujo completo)",
-    "description": "Coleccion actualizada para la Entrega 2: autenticacion con JWT via API Gateway.\n\nUso: correr las carpetas en orden (1 -> 9) o 'Run collection' completa. Los logins guardan los tokens y los IDs se capturan solos. Todo apunta a {{baseUrl}} = http://localhost:8080 (el gateway).\n\nRegla E2: salvo crear usuario y login, todo va con 'Authorization: Bearer <token>'. El gateway valida el token e inyecta X-Usuario-Id / X-Rol a los micros.",
+    "description": "Coleccion actualizada para la Entrega 2: autenticacion con JWT via API Gateway.\n\nUso: correr las carpetas en orden (1 -> 9) o 'Run collection' completa. Los logins guardan los tokens y los IDs se capturan solos. Todo apunta a {{baseUrl}} = http://localhost:8080 (el gateway).\n\nRegla E2: salvo el registro de clientes y el login, todo va con 'Authorization: Bearer <token>'.\n\nF1: el ADMINISTRADOR viene precargado (admin@a.com / 1234, variables ADMIN_EMAIL y ADMIN_PASSWORD de ms-usuarios). El registro publico solo crea CLIENTE; ORGANIZADOR y ACCESO los crea el admin con su token (carpeta 1). El gateway valida el token e inyecta X-Usuario-Id / X-Rol a los micros.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Usuarios (publico)",
+      "name": "1. Usuarios (admin inicial crea los roles; el registro publico solo crea CLIENTE)",
       "item": [
         {
-          "name": "Crear ADMINISTRADOR",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Admin\",\n  \"email\": \"admin@a.com\",\n  \"rol\": \"ADMINISTRADOR\",\n  \"password\": \"1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Crear ORGANIZADOR",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Orga\",\n  \"email\": \"orga@a.com\",\n  \"rol\": \"ORGANIZADOR\",\n  \"password\": \"1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Crear CLIENTE",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Cliente\",\n  \"email\": \"cli@a.com\",\n  \"rol\": \"CLIENTE\",\n  \"password\": \"1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Crear ACCESO",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuarios"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Acceso\",\n  \"email\": \"acc@a.com\",\n  \"rol\": \"ACCESO\",\n  \"password\": \"1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "2. Login (publico) -> captura tokens",
-      "item": [
-        {
-          "name": "Login ADMIN",
+          "name": "Login ADMIN (administrador inicial)",
           "request": {
             "method": "POST",
             "header": [
@@ -237,6 +56,204 @@
             }
           ]
         },
+        {
+          "name": "Registro público como ADMINISTRADOR -> 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Intruso\",\n  \"email\": \"intruso@a.com\",\n  \"rol\": \"ADMINISTRADOR\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 SOLO_ADMIN_CREA_ROLES\", function(){",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error).to.eql(\"SOLO_ADMIN_CREA_ROLES\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear ORGANIZADOR (Bearer ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Orga\",\n  \"email\": \"orga@a.com\",\n  \"rol\": \"ORGANIZADOR\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear ACCESO (Bearer ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Acceso\",\n  \"email\": \"acc@a.com\",\n  \"rol\": \"ACCESO\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear CLIENTE (registro público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cliente\",\n  \"email\": \"cli@a.com\",\n  \"rol\": \"CLIENTE\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201/409\", function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Login (publico) -> captura tokens",
+      "item": [
         {
           "name": "Login ORGANIZADOR",
           "request": {

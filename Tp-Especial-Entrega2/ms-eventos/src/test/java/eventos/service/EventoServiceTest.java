@@ -28,6 +28,9 @@ class EventoServiceTest {
     private final ApplicationEventPublisher publicador = mock(ApplicationEventPublisher.class);
     private final EventoService service = new EventoService(repo, lugares, ventas, publicador);
 
+    /** El organizador de los eventos de prueba (Evento.organizadorId = 1). */
+    private static final long ORGANIZADOR_ID = 1L;
+
     private static final EventoSector SECTOR_12 = new EventoSector(12L, true, new BigDecimal("30000"));
     private static final EventoSector ZONA_13 = new EventoSector(13L, false, new BigDecimal("15000"));
 
@@ -41,14 +44,14 @@ class EventoServiceTest {
     void crear_sin_nombre_tira_400() {
         var req = new Dtos.CrearEventoRequest(" ", "d", "RECITAL",
                 LocalDateTime.now(), 1L, "Tandil", 1L, 6);
-        ApiException ex = assertThrows(ApiException.class, () -> service.crear(req));
+        ApiException ex = assertThrows(ApiException.class, () -> service.crear(req, ORGANIZADOR_ID, "ORGANIZADOR"));
         assertEquals(400, ex.status().value());
     }
 
     @Test
     void publicar_sin_sectores_tira_409_y_no_llama_a_ventas() {
         when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("BORRADOR", List.of())));
-        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L));
+        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L, ORGANIZADOR_ID, "ORGANIZADOR"));
         assertEquals(409, ex.status().value());
         assertEquals("SIN_SECTORES", ex.codigo());
         verifyNoInteractions(ventas);
@@ -61,7 +64,7 @@ class EventoServiceTest {
         when(lugares.sectores(1L)).thenReturn(List.of(new SectorLugar(12L, true, 50), new SectorLugar(13L, false, 1000)));
         when(repo.publicar(1L)).thenReturn(true);
 
-        service.publicar(1L);
+        service.publicar(1L, ORGANIZADOR_ID, "ORGANIZADOR");
 
         // el numerado va sin capacidad (ventas le pide los asientos a lugares); la zona lleva la de lugares
         verify(ventas).prepararDisponibilidad(1L, List.of(
@@ -80,7 +83,7 @@ class EventoServiceTest {
         doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido"))
                 .when(ventas).prepararDisponibilidad(anyLong(), anyList());
 
-        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L));
+        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L, ORGANIZADOR_ID, "ORGANIZADOR"));
 
         assertEquals(503, ex.status().value());
         verify(repo, never()).publicar(anyLong());
@@ -92,7 +95,7 @@ class EventoServiceTest {
         when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("BORRADOR", List.of(SECTOR_12))));
         when(lugares.sectores(1L)).thenReturn(List.of(new SectorLugar(99L, true, 50)));
 
-        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L));
+        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L, ORGANIZADOR_ID, "ORGANIZADOR"));
 
         assertEquals("SECTOR_FUERA_DEL_LUGAR", ex.codigo());
         verifyNoInteractions(ventas);
@@ -101,7 +104,7 @@ class EventoServiceTest {
     @Test
     void cancelar_dos_veces_tira_409() {
         when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("CANCELADO", List.of(SECTOR_12))));
-        ApiException ex = assertThrows(ApiException.class, () -> service.cancelar(1L, "motivo"));
+        ApiException ex = assertThrows(ApiException.class, () -> service.cancelar(1L, "motivo", ORGANIZADOR_ID, "ORGANIZADOR"));
         assertEquals(409, ex.status().value());
         verifyNoInteractions(ventas);
     }
@@ -111,7 +114,7 @@ class EventoServiceTest {
         when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("PUBLICADO", List.of(SECTOR_12))));
         when(repo.cancelar(1L, "lluvia")).thenReturn(true);
 
-        Dtos.CancelacionView view = service.cancelar(1L, "lluvia");
+        Dtos.CancelacionView view = service.cancelar(1L, "lluvia", ORGANIZADOR_ID, "ORGANIZADOR");
 
         assertEquals("PROCESADAS", view.devoluciones());
         verify(ventas).avisarCancelacion(1L);
@@ -124,7 +127,7 @@ class EventoServiceTest {
         when(repo.cancelar(1L, "lluvia")).thenReturn(true);
         doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido")).when(ventas).avisarCancelacion(1L);
 
-        Dtos.CancelacionView view = service.cancelar(1L, "lluvia");
+        Dtos.CancelacionView view = service.cancelar(1L, "lluvia", ORGANIZADOR_ID, "ORGANIZADOR");
 
         assertEquals("CANCELADO", view.estado());
         assertEquals("PENDIENTES", view.devoluciones());
@@ -137,7 +140,7 @@ class EventoServiceTest {
         var sectores = List.of(
                 new Dtos.SectorPrecioRequest(12L, true, new BigDecimal("30000")),
                 new Dtos.SectorPrecioRequest(13L, false, null));
-        ApiException ex = assertThrows(ApiException.class, () -> service.configurarSectores(1L, sectores));
+        ApiException ex = assertThrows(ApiException.class, () -> service.configurarSectores(1L, sectores, ORGANIZADOR_ID, "ORGANIZADOR"));
         assertEquals(400, ex.status().value());
         verify(repo, never()).guardarSector(anyLong(), any());
     }
@@ -164,5 +167,56 @@ class EventoServiceTest {
         assertEquals("Tandil", info.ciudad());
         assertEquals(1L, info.lugarId());
         assertTrue(info.participantes().isEmpty());
+    }
+
+    // ---------------------------------------------------------------- roles (F1)
+
+    @Test
+    void un_cliente_no_puede_crear_eventos() {
+        var req = new Dtos.CrearEventoRequest("Recital", "d", "RECITAL",
+                LocalDateTime.now(), 1L, "Tandil", 1L, 6);
+        ApiException ex = assertThrows(ApiException.class, () -> service.crear(req, 5L, "CLIENTE"));
+        assertEquals(403, ex.status().value());
+        assertEquals("SOLO_ORGANIZADOR", ex.codigo());
+        verify(repo, never()).crear(any());
+    }
+
+    @Test
+    void un_organizador_crea_el_evento_a_su_nombre() {
+        // pide crearlo a nombre del organizador 99: se ignora y queda a nombre de quien lo crea
+        var req = new Dtos.CrearEventoRequest("Recital", "d", "RECITAL",
+                LocalDateTime.now(), 1L, "Tandil", 99L, 6);
+        when(repo.crear(any())).thenReturn(10L);
+
+        assertEquals(10L, service.crear(req, 7L, "ORGANIZADOR"));
+
+        verify(repo).crear(argThat(r -> r.organizadorId() == 7L));
+    }
+
+    @Test
+    void un_organizador_no_puede_publicar_un_evento_ajeno() {
+        when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("BORRADOR", List.of(SECTOR_12))));
+        ApiException ex = assertThrows(ApiException.class, () -> service.publicar(1L, 2L, "ORGANIZADOR"));
+        assertEquals(403, ex.status().value());
+        assertEquals("NO_ES_TU_EVENTO", ex.codigo());
+        verifyNoInteractions(ventas);
+    }
+
+    @Test
+    void un_administrador_puede_publicar_un_evento_ajeno() {
+        when(repo.buscarPorId(1L)).thenReturn(Optional.of(evento("BORRADOR", List.of(ZONA_13))));
+        when(lugares.sectores(1L)).thenReturn(List.of(new SectorLugar(13L, false, 1000)));
+        when(repo.publicar(1L)).thenReturn(true);
+
+        service.publicar(1L, 50L, "ADMINISTRADOR");
+
+        verify(repo).publicar(1L);
+    }
+
+    @Test
+    void acceso_no_puede_cancelar_eventos() {
+        ApiException ex = assertThrows(ApiException.class, () -> service.cancelar(1L, "x", 3L, "ACCESO"));
+        assertEquals("SOLO_ORGANIZADOR", ex.codigo());
+        verify(repo, never()).cancelar(anyLong(), any());
     }
 }

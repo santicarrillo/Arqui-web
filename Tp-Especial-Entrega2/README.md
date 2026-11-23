@@ -82,11 +82,17 @@ docker compose up -d usuarios-db eventos-db ventas-db lugares-db pagos-db
 
 ## Seguridad: cómo autenticarse
 
-1. **Crear usuario** (público) — ahora requiere `password`:
+**Administrador inicial (F1):** al arrancar, `ms-usuarios` crea un ADMINISTRADOR si todavía no existe un usuario
+con su email: `admin@a.com` / `1234` por defecto, configurable con las variables `ADMIN_EMAIL` y
+`ADMIN_PASSWORD` (están en el `docker-compose.yml`). La clave se guarda hasheada con BCrypt, como las demás.
+
+1. **Crear usuario** — requiere `password`. El registro público (sin token) **solo crea clientes**:
    ```
    POST /usuarios
    { "nombre": "Ana", "email": "ana@a.com", "rol": "CLIENTE", "password": "1234" }
    ```
+   Los demás roles (`ORGANIZADOR`, `ACCESO` y otros `ADMINISTRADOR`) los crea un administrador, con el mismo
+   endpoint y su token en `Authorization: Bearer <token>`. Sin token de administrador → `403 SOLO_ADMIN_CREA_ROLES`.
 2. **Login** (público) — devuelve el token:
    ```
    POST /usuarios/login
@@ -97,7 +103,20 @@ docker compose up -d usuarios-db eventos-db ventas-db lugares-db pagos-db
    El gateway valida la firma e inyecta `X-Usuario-Id` / `X-Rol` a los micros (que ya no aceptan
    esos headers desde afuera: se limpian para evitar spoofing).
 
-Rutas públicas: `POST /usuarios/login` y `POST /usuarios` (registro). El resto exige token válido.
+Rutas públicas: `POST /usuarios/login` y `POST /usuarios` (registro). El resto exige token válido. Si el registro
+llega con token, el gateway lo valida igual (inválido → `401`) y le pasa a `ms-usuarios` el rol de quien lo creó.
+
+**Qué puede hacer cada rol** (cada servicio responde `403` con `{error, mensaje}` si no corresponde; la matriz
+completa está en `documentacion/07-pruebas-seguridad.md`):
+
+| Rol | Puede |
+|---|---|
+| `CLIENTE` | Comprar, pagar y cancelar sus compras; ver sus entradas; pedir devoluciones; turnos de la fila virtual; preferencias y recomendaciones. |
+| `ORGANIZADOR` | Crear lugares y sectores; crear sus eventos y, **solo los propios**, cargar precios y participantes, publicarlos y cancelarlos; reportes y fila virtual de sus eventos. |
+| `ADMINISTRADOR` | Lo mismo que un organizador, sobre cualquier evento; crear usuarios de cualquier rol y listarlos; aprobar o rechazar devoluciones; validar QR. |
+| `ACCESO` | Validar los QR en la puerta. |
+
+Las consultas de eventos, lugares y disponibilidad las puede hacer cualquier usuario con sesión.
 
 ## Interfaz web (GUI del cliente)
 

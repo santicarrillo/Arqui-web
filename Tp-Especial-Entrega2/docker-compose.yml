@@ -80,6 +80,9 @@ services:
       USUARIOS_DB_USER: usuarios
       USUARIOS_DB_PASSWORD: usuarios
       JWT_SECRET: clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes
+      # F1: administrador que se crea al arrancar si no existe (el registro publico solo crea clientes)
+      ADMIN_EMAIL: admin@a.com
+      ADMIN_PASSWORD: "1234"
     ports:
       - "8081:8081"
     depends_on: [usuarios-db]
