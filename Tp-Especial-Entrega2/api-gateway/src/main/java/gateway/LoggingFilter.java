@@ -10,8 +10,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Filtro global que registra en consola cada petición que entra y sale del API Gateway.
- * Cumple con el requisito de logging centralizado de llamadas.
+ * Bitacora centralizada: registra cada peticion que entra y sale del gateway con su
+ * correlation-id, el usuario (del token), el endpoint, el codigo de respuesta y el tiempo.
+ * Corre despues del AuthFilter, asi ya tiene disponibles X-Correlation-Id y X-Usuario-Id.
  */
 @Component
 public class LoggingFilter implements GlobalFilter, Ordered {
@@ -24,14 +25,18 @@ public class LoggingFilter implements GlobalFilter, Ordered {
         var request = exchange.getRequest();
         String metodo = request.getMethod().name();
         String ruta = request.getURI().getRawPath();
+        String corrHeader = request.getHeaders().getFirst("X-Correlation-Id");
+        String usuarioHeader = request.getHeaders().getFirst("X-Usuario-Id");
+        final String corr = corrHeader != null ? corrHeader : "-";
+        final String usuario = usuarioHeader != null ? usuarioHeader : "anonimo";
 
-        log.info("--> [GATEWAY IN] {} {}", metodo, ruta);
+        log.info("--> [{}] IN  {} {} (usuario={})", corr, metodo, ruta, usuario);
 
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             var response = exchange.getResponse();
             long duracion = System.currentTimeMillis() - inicio;
             int status = response.getStatusCode() != null ? response.getStatusCode().value() : 500;
-            log.info("<-- [GATEWAY OUT] {} {} - Status: {} ({} ms)", metodo, ruta, status, duracion);
+            log.info("<-- [{}] OUT {} {} -> {} ({} ms) usuario={}", corr, metodo, ruta, status, duracion, usuario);
         }));
     }
 

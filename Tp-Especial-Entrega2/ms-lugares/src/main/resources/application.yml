@@ -16,3 +16,7 @@ spring:
       # Ejecuta schema.sql automáticamente al arrancar la aplicación
       mode: always
       schema-locations: classpath:schema.sql
+# Entrega 2 - trazabilidad: cada linea de log lleva el correlation-id (MDC, lo setea CorrelationIdFilter).
+logging:
+  pattern:
+    level: "%5p [corr=%X{correlationId:-}]"
