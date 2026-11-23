@@ -37,3 +37,8 @@ management:
     web:
       exposure:
         include: health,caches,metrics
+
+# Entrega 2 - trazabilidad: cada linea de log lleva el correlation-id (MDC, lo setea CorrelationIdFilter).
+logging:
+  pattern:
+    level: "%5p [corr=%X{correlationId:-}]"

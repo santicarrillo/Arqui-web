@@ -19,3 +19,8 @@ spring:
 jwt:
   secret: ${JWT_SECRET:clave-super-secreta-ticketya-2026-cambiar-en-produccion-min-32-bytes}
   expiracion-segundos: ${JWT_EXPIRACION_SEG:3600}
+
+# Entrega 2 - trazabilidad: cada linea de log lleva el correlation-id (MDC, lo setea CorrelationIdFilter).
+logging:
+  pattern:
+    level: "%5p [corr=%X{correlationId:-}]"

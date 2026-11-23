@@ -16,3 +16,8 @@ spring:
 servicios:
   eventos:
     url: ${EVENTOS_URL:http://localhost:8082}
+
+# Entrega 2 - trazabilidad: cada linea de log lleva el correlation-id (MDC, lo setea CorrelationIdFilter).
+logging:
+  pattern:
+    level: "%5p [corr=%X{correlationId:-}]"
