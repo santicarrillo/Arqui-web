@@ -83,6 +83,21 @@ class DevolucionTest extends IntegracionBase {
     }
 
     @Test
+    void elAdminVeEventoClienteYMontoDeLaDevolucionPendiente() {
+        long entrada = comprarYPagar(CLIENTE, "d00", pedidoAsiento(ASIENTO));
+        devoluciones.solicitar(CLIENTE, entrada);
+
+        List<DevolucionView> pendientes = devoluciones.listar("ADMINISTRADOR", "PENDIENTE");
+
+        assertEquals(1, pendientes.size());
+        DevolucionView d = pendientes.get(0);
+        assertEquals(entrada, d.entradaId());
+        assertEquals(EVENTO, d.eventoId());
+        assertEquals(CLIENTE, d.clienteId());
+        assertEquals(0, new BigDecimal("30000").compareTo(d.monto()));
+    }
+
+    @Test
     void elClienteLaPideYElAdminLaApruebaLaEntradaQuedaDevueltaYElAsientoLibre() {
         long entrada = comprarYPagar(CLIENTE, "d1", pedidoAsiento(ASIENTO));
         assertEquals("VENDIDO", estadoAsiento(ASIENTO));

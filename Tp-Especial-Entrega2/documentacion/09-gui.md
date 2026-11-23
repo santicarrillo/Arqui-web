@@ -15,6 +15,7 @@ sola página que corre en el navegador y le habla **solo al API Gateway**: para 
 | Fila virtual (dentro del detalle) | Saca turno y espera a que se habilite | `POST /filas/{eventoId}/turno`, `GET /filas/{eventoId}/turno` cada 3 s |
 | Compra | Reserva, cuenta regresiva de 10 minutos, elige medio de pago, paga o cancela | `POST /compras` (con `Idempotency-Key`), `GET /compras/{id}`, `POST /compras/{id}/pagar`, `DELETE /compras/{id}` |
 | Mis entradas | Ve cada entrada con su QR y pide devoluciones | `GET /entradas`, `POST /entradas/{id}/devolucion` |
+| Devoluciones (solo ADMINISTRADOR) | Ve los pedidos pendientes con evento, cliente y monto; los aprueba o rechaza | `GET /devoluciones?estado=PENDIENTE`, `GET /usuarios/{id}`, `GET /eventos/{id}`, `PUT /entradas/{id}/devolucion` |
 
 ## Decisiones
 
@@ -36,6 +37,10 @@ permisos: los controla el backend, y la web solo muestra el mensaje de error que
 que un administrador aprueba la devolución, así que con solo el estado la web no sabía que ya se había pedido y,
 al recargar, volvía a ofrecer el botón. Se agregó **al final** el campo `devolucion` (`PENDIENTE`, `APROBADA` o
 `null`) y "Mis entradas" muestra "Pediste la devolución" en vez del botón.
+
+**Cambio en el backend: `GET /devoluciones` trae evento, cliente y monto.** Antes devolvía solo el id de la
+entrada, y con eso el administrador no sabía qué estaba aprobando. Se agregaron **al final** `eventoId`,
+`clienteId` y `monto` (el precio de la entrada, que es lo que se reintegra).
 
 **Errores del backend tal cual.** Todos los micros responden los errores como `{error, mensaje}`. La web
 muestra el `mensaje` y usa el `error` para decidir qué hacer: con `TURNO_*` muestra la fila virtual, con un
@@ -78,7 +83,7 @@ respeta "reducir movimiento".
 
 ## Límites conocidos
 
-- La web es solo para clientes. Con otro rol se puede entrar, pero muestra un aviso; las pantallas de
-  organizador, administrador y personal de acceso quedan para Postman/Swagger.
+- La web es para clientes, más la pantalla de devoluciones del administrador. Con los otros roles se puede
+  entrar, pero muestra un aviso; las pantallas de organizador y personal de acceso quedan para Postman/Swagger.
 - El token se guarda en `localStorage`; en producción se preferiría una cookie `HttpOnly` para que un script
   inyectado no pueda leerlo.

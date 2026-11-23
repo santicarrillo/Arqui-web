@@ -7,6 +7,7 @@ import Eventos from './paginas/Eventos'
 import EventoDetalle from './paginas/EventoDetalle'
 import Compra from './paginas/Compra'
 import MisEntradas from './paginas/MisEntradas'
+import Devoluciones from './paginas/Devoluciones'
 
 /** Todas las pantallas menos login y registro necesitan sesion: el gateway pide token en cada ruta. */
 function ConSesion({ children }) {
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/eventos/:id" element={<ConSesion><EventoDetalle /></ConSesion>} />
       <Route path="/compras/:id" element={<ConSesion><Compra /></ConSesion>} />
       <Route path="/entradas" element={<ConSesion><MisEntradas /></ConSesion>} />
+      <Route path="/devoluciones" element={<ConSesion><Devoluciones /></ConSesion>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -527,6 +527,26 @@ button.asiento-ocupado { cursor: not-allowed; }
   pointer-events: none;
 }
 
+/* ---------------------------------------------------------------- devoluciones (administrador) */
+
+.devoluciones { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1rem; }
+
+.devolucion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem 2rem;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--pulsera);
+  border-radius: var(--radio);
+}
+.devolucion h2 { font-family: var(--display); font-weight: 700; font-size: 1.625rem; line-height: 1.1; }
+.devolucion .entrada-datos div { display: grid; }
+.devolucion-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; justify-content: flex-end; }
+.devolucion-acciones .entrada-nota { flex-basis: 100%; text-align: right; }
+
 /* ---------------------------------------------------------------- celular */
 
 @media (max-width: 52rem) {
@@ -545,6 +565,9 @@ button.asiento-ocupado { cursor: not-allowed; }
   .sector-cabecera { grid-template-columns: 1fr auto; }
   .sector-cabecera > :last-child { grid-column: 1 / -1; justify-self: start; }
   .entrada { grid-template-columns: 1fr; }
+  .devolucion { grid-template-columns: 1fr; }
+  .devolucion-acciones { justify-content: flex-start; }
+  .devolucion-acciones .entrada-nota { text-align: left; }
   .entrada-talon { border-left: none; border-top: 2px dashed var(--borde); }
   .entrada-talon::before { top: -13px; left: -14px; }
   .entrada-talon::after { top: -13px; bottom: auto; left: auto; right: -14px; }

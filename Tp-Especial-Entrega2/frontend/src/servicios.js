@@ -42,6 +42,11 @@ export const cancelarCompra = (id) => api(`/compras/${id}`, { method: 'DELETE' }
 export const misEntradas = () => api('/entradas')
 export const pedirDevolucion = (entradaId) => api(`/entradas/${entradaId}/devolucion`, { method: 'POST' })
 
+// ---------- administrador ----------
+export const devoluciones = (estado = 'PENDIENTE') => api(`/devoluciones?estado=${estado}`)
+export const resolverDevolucion = (entradaId, aprobar) =>
+  api(`/entradas/${entradaId}/devolucion`, { method: 'PUT', body: { aprobar } })
+
 // ---------- fila virtual ----------
 export const estadoFila = (eventoId) => api(`/filas/${eventoId}`)
 export const sacarTurno = (eventoId) => api(`/filas/${eventoId}/turno`, { method: 'POST' })

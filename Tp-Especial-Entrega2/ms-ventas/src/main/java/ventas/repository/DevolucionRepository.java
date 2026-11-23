@@ -64,6 +64,17 @@ public class DevolucionRepository {
                 .param("id", entradaId).query(ENTRADA).optional();
     }
 
+    /** La entrada con los datos de su compra, sin bloquearla (para mostrarla). */
+    public Optional<EntradaDeCompra> entrada(long entradaId) {
+        return jdbc.sql("""
+                        SELECT d.id AS entrada_id, d.compra_id, c.cliente_id, c.evento_id, c.evento_fecha_hora,
+                               c.estado AS compra_estado, d.sector_id, d.asiento_id, d.precio_unitario, d.estado
+                        FROM detalle_compra d JOIN compra c ON c.id = d.compra_id
+                        WHERE d.id = :id
+                        """)
+                .param("id", entradaId).query(ENTRADA).optional();
+    }
+
     /** VALIDA -> DEVUELTA. Devuelve false si la entrada ya no estaba VALIDA. */
     public boolean marcarEntradaDevuelta(long entradaId) {
         return jdbc.sql("UPDATE detalle_compra SET estado = 'DEVUELTA' WHERE id = :id AND estado = 'VALIDA'")

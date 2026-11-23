@@ -38,10 +38,11 @@ Las carpetas 1 y 2 de esa colección crean estos usuarios (todos con contraseña
 |---|---|---|
 | CLIENTE | `cli@a.com` | **El que se usa en la web**: busca eventos, compra y ve sus entradas. |
 | ORGANIZADOR | `orga@a.com` | Crea y publica eventos (por Postman/Swagger). |
-| ADMINISTRADOR | `admin@a.com` | Crea lugares y sectores, aprueba devoluciones (por Postman/Swagger). |
+| ADMINISTRADOR | `admin@a.com` | **En la web**: pantalla "Devoluciones" para aprobar o rechazar los pedidos. Lugares y sectores, por Postman/Swagger. |
 | ACCESO | `acc@a.com` | Valida los QR en la puerta (por Postman/Swagger). |
 
-La web es solo para clientes: con los otros roles se puede iniciar sesión, pero muestra un aviso. También se
+La web es para clientes, más la pantalla de devoluciones del administrador: con ORGANIZADOR o ACCESO se puede
+iniciar sesión, pero muestra un aviso. También se
 puede crear una cuenta nueva desde "Crear cuenta", que siempre queda como CLIENTE.
 
 Después de las carpetas 3 y 4 queda publicado "Recital de Prueba" (Tandil, sector Campo sin numerar, 100
