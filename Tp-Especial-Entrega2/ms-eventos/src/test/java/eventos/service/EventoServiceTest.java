@@ -159,5 +159,10 @@ class EventoServiceTest {
         assertTrue(info.sectores().get(0).numerado());
         assertEquals(0, new BigDecimal("30000").compareTo(info.sectores().get(0).precio()));
         assertEquals(1L, info.organizadorId());
+        // GUI: los datos que muestra la web
+        assertEquals("Recital", info.nombre());
+        assertEquals("Tandil", info.ciudad());
+        assertEquals(1L, info.lugarId());
+        assertTrue(info.participantes().isEmpty());
     }
 }

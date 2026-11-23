@@ -22,7 +22,7 @@ Postman** (`TicketYa.postman_collection.json`) ejecuta el flujo completo.
 | PUT | `/eventos/{id}/publicacion` | — | 200 · 404 · 409 (`SIN_SECTORES`) |
 | PUT | `/eventos/{id}/cancelacion` | `{motivo}` | 200 · 404 · 409 |
 | GET | `/eventos` | `?tipo=&organizadorId=&participante=&ciudad=&desde=&hasta=&orden=` | 200 |
-| GET | `/eventos/{id}` | — | 200 (contrato que usa ventas) · 404 |
+| GET | `/eventos/{id}` | — | 200 (contrato que usa ventas, más `organizadorId`, `nombre`, `descripcion`, `tipo`, `ciudad`, `lugarId` y `participantes` al final) · 404 |
 
 ## lugares
 | Método | Ruta | Body / params | Respuestas |

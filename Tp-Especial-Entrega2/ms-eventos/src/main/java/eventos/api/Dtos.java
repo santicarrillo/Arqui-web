@@ -22,9 +22,15 @@ public final class Dtos {
     // ---------- responses (lo que sale) ----------
     // >>> CONTRATO que consume ventas (GET /eventos/{id}). NO cambiar nombres. <<<
     // F7: se agrega organizadorId al final (ventas lo usa para que cada organizador vea solo sus reportes)
+    // GUI: se agregan al final los datos que muestra la web (nombre, lugar, participantes...). Ventas los ignora
+    // porque su DTO no los declara, asi que el contrato sigue siendo compatible.
     public record EventoInfoView(
             Long id, String estado, LocalDateTime fechaHora,
-            Integer limitePorCliente, List<SectorEventoView> sectores, Long organizadorId) {}
+            Integer limitePorCliente, List<SectorEventoView> sectores, Long organizadorId,
+            String nombre, String descripcion, String tipo, String ciudad, Long lugarId,
+            List<ParticipanteView> participantes) {}
+
+    public record ParticipanteView(String nombre, String tipo) {}
 
     public record SectorEventoView(Long sectorId, boolean numerado, BigDecimal precio) {}
 
