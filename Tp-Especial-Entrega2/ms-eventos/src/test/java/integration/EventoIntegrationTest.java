@@ -69,6 +69,9 @@ class EventoIntegrationTest {
         r.add("spring.data.mongodb.uri", () -> db.getReplicaSetUrl("eventos"));
     }
 
+    /** Organizador de los eventos de prueba (va en los encabezados que pone el gateway). */
+    static final long ORGANIZADOR_ID = 1L;
+
     @Autowired
     MockMvc mvc;
 
@@ -99,7 +102,7 @@ class EventoIntegrationTest {
     }
 
     private long crearEvento(String tipo, String ciudad) throws Exception {
-        String body = mvc.perform(post("/eventos").contentType("application/json").content("""
+        String body = mvc.perform(post("/eventos").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json").content("""
                 {"nombre":"Evento","tipo":"%s","fechaHora":"2026-12-01T21:00:00","lugarId":1,"ciudad":"%s","organizadorId":1,"limitePorCliente":6}
                 """.formatted(tipo, ciudad)))
                 .andExpect(status().isCreated())
@@ -108,12 +111,12 @@ class EventoIntegrationTest {
     }
 
     private void cargarSectores(long id, String json) throws Exception {
-        mvc.perform(post("/eventos/" + id + "/sectores").contentType("application/json").content(json))
+        mvc.perform(post("/eventos/" + id + "/sectores").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json").content(json))
                 .andExpect(status().isOk());
     }
 
     private void publicar(long id) throws Exception {
-        mvc.perform(put("/eventos/" + id + "/publicacion")).andExpect(status().isOk());
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR")).andExpect(status().isOk());
     }
 
     @Test
@@ -139,7 +142,7 @@ class EventoIntegrationTest {
     @Test
     void publicar_sin_sectores_da_409() throws Exception {
         long id = crearEvento("TEATRO", "Azul");
-        mvc.perform(put("/eventos/" + id + "/publicacion")).andExpect(status().isConflict());
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR")).andExpect(status().isConflict());
     }
 
     @Test
@@ -174,7 +177,7 @@ class EventoIntegrationTest {
     @Test
     void busqueda_por_participante_sin_importar_mayusculas() throws Exception {
         long id = crearEvento("RECITAL", "Tandil");
-        mvc.perform(post("/eventos/" + id + "/participantes").contentType("application/json").content("""
+        mvc.perform(post("/eventos/" + id + "/participantes").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json").content("""
                 [{"nombre":"Los Piojos","tipo":"ARTISTA"}]
                 """)).andExpect(status().isOk());
         cargarSectores(id, """
@@ -233,7 +236,7 @@ class EventoIntegrationTest {
         doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido"))
                 .when(ventas).prepararDisponibilidad(anyLong(), anyList());
 
-        mvc.perform(put("/eventos/" + id + "/publicacion")).andExpect(status().isServiceUnavailable());
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR")).andExpect(status().isServiceUnavailable());
 
         mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.estado").value("BORRADOR"));
     }
@@ -245,7 +248,7 @@ class EventoIntegrationTest {
                 [{"sectorId":77,"numerado":false,"precio":15000}]
                 """);
 
-        mvc.perform(put("/eventos/" + id + "/publicacion"))
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("SECTOR_FUERA_DEL_LUGAR"));
     }
@@ -258,7 +261,7 @@ class EventoIntegrationTest {
                 """);
         publicar(id);
 
-        mvc.perform(put("/eventos/" + id + "/cancelacion").contentType("application/json")
+        mvc.perform(put("/eventos/" + id + "/cancelacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json")
                         .content("{\"motivo\":\"lluvia\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("CANCELADO"))
@@ -278,7 +281,7 @@ class EventoIntegrationTest {
         doThrow(ApiException.unavailable("VENTAS_NO_DISPONIBLE", "caido")).doNothing()
                 .when(ventas).avisarCancelacion(eq(id));
 
-        mvc.perform(put("/eventos/" + id + "/cancelacion").contentType("application/json")
+        mvc.perform(put("/eventos/" + id + "/cancelacion").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json")
                         .content("{\"motivo\":\"lluvia\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.devoluciones").value("PENDIENTES"));
@@ -337,7 +340,7 @@ class EventoIntegrationTest {
     @Test
     void publicar_un_evento_con_artistas_avisa_a_notificaciones() throws Exception {
         long id = crearEvento("RECITAL", "Tandil");
-        mvc.perform(post("/eventos/" + id + "/participantes").contentType("application/json").content("""
+        mvc.perform(post("/eventos/" + id + "/participantes").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json").content("""
                 [{"nombre":"Divididos","tipo":"BANDA"}]
                 """)).andExpect(status().isOk());
         cargarSectores(id, """
@@ -356,7 +359,7 @@ class EventoIntegrationTest {
     @Test
     void el_detalle_trae_lo_que_muestra_la_web() throws Exception {
         long id = crearEvento("RECITAL", "Tandil");
-        mvc.perform(post("/eventos/" + id + "/participantes").contentType("application/json").content("""
+        mvc.perform(post("/eventos/" + id + "/participantes").header("X-Usuario-Id", ORGANIZADOR_ID).header("X-Rol", "ORGANIZADOR").contentType("application/json").content("""
                 [{"nombre":"Divididos","tipo":"BANDA"}]
                 """)).andExpect(status().isOk());
 
@@ -367,5 +370,44 @@ class EventoIntegrationTest {
                 .andExpect(jsonPath("$.ciudad").value("Tandil"))
                 .andExpect(jsonPath("$.lugarId").value(1))
                 .andExpect(jsonPath("$.participantes[0].nombre").value("Divididos"));
+    }
+
+    // ---------------------------------------------------------------- F1: roles
+
+    @Test
+    void un_cliente_no_puede_crear_eventos() throws Exception {
+        mvc.perform(post("/eventos").header("X-Usuario-Id", 5).header("X-Rol", "CLIENTE")
+                        .contentType("application/json").content("""
+                        {"nombre":"Evento","tipo":"RECITAL","fechaHora":"2026-12-01T21:00:00","lugarId":1,"ciudad":"Tandil","organizadorId":5,"limitePorCliente":6}
+                        """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("SOLO_ORGANIZADOR"));
+    }
+
+    @Test
+    void un_organizador_no_puede_publicar_un_evento_ajeno() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", 2).header("X-Rol", "ORGANIZADOR"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("NO_ES_TU_EVENTO"));
+
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.estado").value("BORRADOR"));
+    }
+
+    @Test
+    void un_administrador_puede_publicar_un_evento_ajeno() throws Exception {
+        long id = crearEvento("RECITAL", "Tandil");
+        cargarSectores(id, """
+                [{"sectorId":13,"numerado":false,"precio":15000}]
+                """);
+
+        mvc.perform(put("/eventos/" + id + "/publicacion").header("X-Usuario-Id", 50).header("X-Rol", "ADMINISTRADOR"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/eventos/" + id)).andExpect(jsonPath("$.estado").value("PUBLICADO"));
     }
 }
